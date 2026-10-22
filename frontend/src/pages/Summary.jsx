@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import api from '../api/client';
 import PeriodSelector from '../components/PeriodSelector';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD, pill, btnPrimary, kpiIcon } from '../theme';
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
@@ -192,24 +193,24 @@ function PctBadge({ value, size }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub:   { fontSize: 13, color: '#64748b', marginBottom: 20 },
-  grid3: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub:   { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
+  grid3: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 20 },
   card:  (color) => ({
-    background: '#fff', borderRadius: 10, padding: '16px 20px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderLeft: `4px solid ${color}`,
+    background: '#fff', borderRadius: RADIUS.card, padding: '18px 22px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, borderTop: `3px solid ${color}`,
   }),
-  cardTitle: { fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 },
-  cardVal:   (color) => ({ fontSize: 24, fontWeight: 800, color }),
-  cardSub:   { fontSize: 12, color: '#94a3b8', marginTop: 3 },
+  cardTitle: { fontSize: 11, fontWeight: 700, color: COLOR.textFaint, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 },
+  cardVal:   (color) => ({ fontSize: 25, fontWeight: 800, color, letterSpacing: '-0.4px' }),
+  cardSub:   { fontSize: 12, color: COLOR.textMuted, marginTop: 3 },
   table: {
-    background: '#fff', borderRadius: 10, padding: '22px 26px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 16,
+    background: '#fff', borderRadius: RADIUS.card, padding: '22px 26px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 16,
   },
-  tableTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 16 },
-  divider: { borderTop: '2px solid #1e293b', margin: '10px 0' },
+  tableTitle: { fontFamily: FONT_HEADING, fontSize: 15, fontWeight: 700, color: COLOR.inkSoft, marginBottom: 16 },
+  divider: { borderTop: `2px solid ${COLOR.ink}`, margin: '10px 0' },
   totalRow: { display: 'flex', justifyContent: 'space-between', padding: '9px 0', fontWeight: 700, fontSize: 15 },
-  noData: { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
+  noData: { textAlign: 'center', padding: 48, color: COLOR.textMuted, fontSize: 14 },
 };
 
 export default function Summary() {
@@ -477,10 +478,12 @@ export default function Summary() {
           <div style={s.sub}>Todos los campos se guardan automáticamente al salir.</div>
         </div>
         {period && summary && (
-          <button onClick={exportPDF}
-            style={{ padding: '8px 16px', background: '#dc2626', color: '#fff', border: 'none',
-                     borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            ⬇️ Descargar PDF
+          <button onClick={exportPDF} style={{ ...btnPrimary, whiteSpace: 'nowrap' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3V15M12 15L7 10M12 15L17 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 17V19A2 2 0 0 0 6 21H18A2 2 0 0 0 20 19V17" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            Descargar PDF
           </button>
         )}
       </div>
@@ -492,30 +495,38 @@ export default function Summary() {
       {period && summary && (
         <>
           {/* ═══ SECCIÓN 1: RESUMEN DE ESTADO (del Excel) ═══ */}
-          <div style={{ ...s.table, borderLeft: '4px solid #6366f1' }}>
-            <div style={s.tableTitle}>📊 Resumen de Estado · Del Excel</div>
+          <div style={s.table}>
+            <div style={s.tableTitle}>Resumen de Estado · Del Excel</div>
 
             {/* Status cards */}
-            <div className="grid-4" style={{ marginBottom: 16 }}>
-              <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>DESPACHADOS</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: '#3b82f6' }}>{totalOrders}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>100%</div>
+            <div className="grid-4" style={{ marginBottom: 18, marginTop: 14 }}>
+              <div style={{ background: '#F8F9FC', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={kpiIcon('#E0E7FF', '#C7D2FE')}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" stroke="#4F46E5" strokeWidth="1.8" /><path d="M3.3 7L12 12L20.7 7M12 12V21.5" stroke="#4F46E5" strokeWidth="1.8" /></svg>
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: COLOR.ink, marginTop: 10, letterSpacing: '-0.4px' }}>{totalOrders}</div>
+                <div style={{ fontSize: 11.5, color: COLOR.textMuted, fontWeight: 600, marginTop: 2 }}>Despachados</div>
               </div>
-              <div style={{ background: '#f0fdf4', borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>ENTREGADOS</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: '#22c55e' }}>{entregadoCount}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>{pct(entregadoCount, totalOrders)}% de despachados</div>
+              <div style={{ background: '#F8F9FC', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={kpiIcon('#DCFCE7', '#BBF7D0')}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="#16A34A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: COLOR.success, marginTop: 10, letterSpacing: '-0.4px' }}>{entregadoCount}</div>
+                <div style={{ fontSize: 11.5, color: COLOR.textMuted, fontWeight: 600, marginTop: 2 }}>Entregados · {pct(entregadoCount, totalOrders)}%</div>
               </div>
-              <div style={{ background: '#fef2f2', borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>DEVOLUCIONES</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: '#ef4444' }}>{devolucionCount}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>{pct(devolucionCount, totalOrders)}% de despachados</div>
+              <div style={{ background: '#F8F9FC', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={kpiIcon('#FEE2E2', '#FECACA')}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M19 13L15 9M15 9L19 5M15 9H9.5C6.5 9 5 10.5 5 13.5V19" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: COLOR.danger, marginTop: 10, letterSpacing: '-0.4px' }}>{devolucionCount}</div>
+                <div style={{ fontSize: 11.5, color: COLOR.textMuted, fontWeight: 600, marginTop: 2 }}>Devoluciones · {pct(devolucionCount, totalOrders)}%</div>
               </div>
-              <div style={{ background: '#fffbeb', borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>EN PROCESO</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: '#f59e0b' }}>{enProcesoCount}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>{pct(enProcesoCount, totalOrders)}% de despachados</div>
+              <div style={{ background: '#F8F9FC', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={kpiIcon('#FEF3C7', '#FDE68A')}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#D97706" strokeWidth="1.9" /><path d="M12 7V12L15.5 14" stroke="#D97706" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: COLOR.warning, marginTop: 10, letterSpacing: '-0.4px' }}>{enProcesoCount}</div>
+                <div style={{ fontSize: 11.5, color: COLOR.textMuted, fontWeight: 600, marginTop: 2 }}>En proceso · {pct(enProcesoCount, totalOrders)}%</div>
               </div>
             </div>
 
@@ -543,8 +554,8 @@ export default function Summary() {
           </div>
 
           {/* ═══ SECCIÓN 2: EMBUDO DE PEDIDOS ═══ */}
-          <div style={{ ...s.table, borderLeft: '4px solid #8b5cf6' }}>
-            <div style={s.tableTitle}>📈 Embudo de Pedidos</div>
+          <div style={s.table}>
+            <div style={s.tableTitle}>Embudo de Pedidos</div>
 
             {/* Tabla resumen de métricas */}
             <div className="table-scroll">
@@ -694,8 +705,8 @@ export default function Summary() {
 
           {/* ═══ SECCIÓN 2.5: POR TRANSPORTADORA ═══ */}
           {byCarrier.length > 0 && (
-            <div style={{ ...s.table, borderLeft: '4px solid #0ea5e9' }}>
-              <div style={s.tableTitle}>📦 Por Transportadora</div>
+            <div style={s.table}>
+              <div style={s.tableTitle}>Por Transportadora</div>
               <div className="table-scroll">
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
                 <thead>
@@ -756,7 +767,7 @@ export default function Summary() {
 
           {/* ═══ SECCIÓN 3: CIERRE FINANCIERO ═══ */}
           <div style={s.table}>
-            <div style={s.tableTitle}>💰 Cierre Mensual · {period.store_name}</div>
+            <div style={s.tableTitle}>Cierre Mensual · {period.store_name}</div>
 
             {/* ENTREGADO DROPI */}
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid #f8fafc' }}>
@@ -928,7 +939,7 @@ export default function Summary() {
 
           {showLineas && (
             <div style={s.table}>
-              <div style={s.tableTitle}>👔👗 Zindra Hombre vs Dama (mini-resumen)</div>
+              <div style={s.tableTitle}>Zindra Hombre vs Dama (mini-resumen)</div>
               <div style={{ fontSize: 12, color: '#94a3b8', background: '#f8fafc', borderRadius: 8, padding: '8px 12px', marginBottom: 14 }}>
                 Separación solo para este mini-resumen, no es una tienda nueva. El gasto en pauta es el real de cada línea
                 (según las campañas asignadas por producto). "Otros ingresos" (ej. Proveedor Bogotá) va completo a Hombre.
