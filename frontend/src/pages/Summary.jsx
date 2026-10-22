@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../api/client';
 import PeriodSelector from '../components/PeriodSelector';
 import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD, pill, btnPrimary, kpiIcon } from '../theme';
@@ -530,12 +531,48 @@ export default function Summary() {
               </div>
             </div>
 
-            {/* Status bar */}
-            <div style={{ display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', marginBottom: 8 }}>
-              <div style={{ width: `${pct(entregadoCount, totalOrders)}%`, background: '#22c55e' }} title="Entregados" />
-              <div style={{ width: `${pct(devolucionCount, totalOrders)}%`, background: '#ef4444' }} title="Devoluciones" />
-              <div style={{ width: `${pct(enProcesoCount, totalOrders)}%`, background: '#f59e0b' }} title="En proceso" />
-            </div>
+            {/* Status donut */}
+            {(() => {
+              const otrosCount = Math.max(0, totalOrders - entregadoCount - devolucionCount - enProcesoCount);
+              const donutData = [
+                { name: 'Entregados', value: entregadoCount, color: COLOR.accent },
+                { name: 'Devoluciones', value: devolucionCount, color: COLOR.danger },
+                { name: 'En proceso', value: enProcesoCount, color: COLOR.warning },
+                ...(otrosCount > 0 ? [{ name: 'Otros', value: otrosCount, color: '#94A3B8' }] : []),
+              ].filter(d => d.value > 0);
+              return (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ width: 150, height: 150, flexShrink: 0, position: 'relative' }}>
+                    <ResponsiveContainer>
+                      <PieChart>
+                        <Pie data={donutData} dataKey="value" nameKey="name" innerRadius="68%" outerRadius="100%"
+                             paddingAngle={2} stroke="none">
+                          {donutData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                        </Pie>
+                        <Tooltip formatter={(v, n) => [`${v} pedidos`, n]}
+                                 contentStyle={{ borderRadius: 10, border: `1px solid ${COLOR.border}`, fontSize: 12.5 }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+                                  alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                      <div style={{ fontFamily: FONT_HEADING, fontSize: 20, fontWeight: 800, color: COLOR.ink }}>
+                        {pct(entregadoCount, totalOrders)}%
+                      </div>
+                      <div style={{ fontSize: 10.5, color: COLOR.textMuted, fontWeight: 600 }}>entregados</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {donutData.map((d, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+                        <span style={{ width: 9, height: 9, borderRadius: 3, background: d.color, display: 'inline-block' }} />
+                        <span style={{ color: COLOR.text, fontWeight: 500 }}>{d.name}</span>
+                        <span style={{ color: COLOR.ink, fontWeight: 700 }}>{d.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Detail of otros status */}
             {summary.otros_status?.length > 0 && (
