@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LabelList } from 'recharts';
 import api from '../api/client';
 import PeriodSelector from '../components/PeriodSelector';
 import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD } from '../theme';
@@ -20,32 +21,57 @@ function MiniBar({ value, max, color }) {
   );
 }
 
+function fmtCompact(n) {
+  const v = n || 0;
+  const abs = Math.abs(v);
+  const sign = v < 0 ? '-' : '';
+  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(0)}K`;
+  return `${sign}$${abs.toFixed(0)}`;
+}
+
+function truncateName(name, max = 22) {
+  return name && name.length > max ? name.slice(0, max - 1) + '…' : name;
+}
+
+function GeoBarTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  const r = payload[0].payload;
+  const isLoss = r.resultado_neto < 0;
+  return (
+    <div style={{ background: '#fff', border: `1px solid ${COLOR.border}`, borderRadius: 10,
+                  boxShadow: '0 8px 24px rgba(20,20,43,.12)', padding: '10px 14px', fontSize: 12.5 }}>
+      <div style={{ fontWeight: 700, color: COLOR.inkSoft, marginBottom: 4 }}>{r.departamento}</div>
+      <div style={{ color: isLoss ? COLOR.danger : COLOR.success, fontWeight: 700 }}>{fmt(r.resultado_neto)}</div>
+    </div>
+  );
+}
+
 // Horizontal profit bar chart, sorted best-to-worst
 function ProfitBarChart({ rows }) {
-  const maxAbs = Math.max(...rows.map(r => Math.abs(r.resultado_neto)), 1);
+  const data = rows.map(r => ({ ...r, label: truncateName(r.departamento) }));
+  const chartHeight = Math.max(220, data.length * 28);
   return (
-    <div style={{ background: '#fff', borderRadius: 10, padding: '18px 20px', boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 20 }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginBottom: 14 }}>
+    <div style={{ background: '#fff', borderRadius: RADIUS.card, padding: '20px 22px', boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 20 }}>
+      <div style={{ fontFamily: FONT_HEADING, fontSize: 14.5, fontWeight: 700, color: COLOR.inkSoft, marginBottom: 14 }}>
         Resultado neto por departamento (ingreso después de devoluciones − gasto en pauta)
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-        {rows.map(r => {
-          const isLoss = r.resultado_neto < 0;
-          const w = (Math.abs(r.resultado_neto) / maxAbs) * 100;
-          return (
-            <div key={r.departamento} style={{ display: 'grid', gridTemplateColumns: '160px 1fr 110px', gap: 10, alignItems: 'center' }}>
-              <div style={{ fontSize: 12, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {r.departamento}
-              </div>
-              <div style={{ height: 16, background: '#f8fafc', borderRadius: 4 }}>
-                <div style={{ height: '100%', width: `${w}%`, borderRadius: 4, background: isLoss ? '#ef4444' : '#22c55e' }} />
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'right', color: isLoss ? '#dc2626' : '#16a34a' }}>
-                {fmt(r.resultado_neto)}
-              </div>
-            </div>
-          );
-        })}
+      <div style={{ width: '100%', height: chartHeight }}>
+        <ResponsiveContainer>
+          <BarChart data={data} layout="vertical" margin={{ top: 4, right: 55, left: 4, bottom: 4 }} barCategoryGap={8}>
+            <CartesianGrid horizontal={false} stroke={COLOR.borderSoft} />
+            <XAxis type="number" tickFormatter={fmtCompact} tick={{ fontSize: 11, fill: COLOR.textMuted }} axisLine={false} tickLine={false} />
+            <YAxis type="category" dataKey="label" width={130} tick={{ fontSize: 11.5, fill: COLOR.text }} axisLine={false} tickLine={false} />
+            <Tooltip content={<GeoBarTooltip />} cursor={{ fill: COLOR.borderSoft }} />
+            <Bar dataKey="resultado_neto" radius={[0, 4, 4, 0]} maxBarSize={18}>
+              {data.map((r, i) => (
+                <Cell key={i} fill={r.resultado_neto < 0 ? COLOR.danger : COLOR.success} />
+              ))}
+              <LabelList dataKey="resultado_neto" position="right" formatter={fmtCompact}
+                         style={{ fontSize: 11, fontWeight: 700, fill: COLOR.inkSoft }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
