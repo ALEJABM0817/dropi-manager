@@ -19,7 +19,7 @@ const s = {
   sectionTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b' },
   sectionSub: { fontSize: 12, color: '#64748b', marginTop: 2 },
   row: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6,
     padding: '12px 20px', borderTop: '1px solid #f1f5f9', fontSize: 13,
   },
   emptyMsg: { padding: '18px 20px', color: '#94a3b8', fontSize: 13, textAlign: 'center' },

@@ -23,15 +23,15 @@ const s = {
     padding: '7px 10px', border: '1.5px solid #e2e8f0', borderRadius: 7, fontSize: 14,
     color: '#1e293b', width: 140,
   },
-  periodsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 10 },
+  periodsGrid: { marginTop: 10 },
   periodChip: (checked) => ({
     display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8,
     border: `1.5px solid ${checked ? '#8b5cf6' : '#e2e8f0'}`, background: checked ? '#f5f3ff' : '#fff',
     cursor: 'pointer', fontSize: 13, fontWeight: 600, color: checked ? '#6d28d9' : '#64748b',
   }),
-  configGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 4 },
+  configGrid: { marginTop: 4 },
   field: { display: 'flex', flexDirection: 'column', gap: 4 },
-  btnRow: { display: 'flex', gap: 10, alignItems: 'center', marginTop: 16 },
+  btnRow: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 16 },
   btn: {
     padding: '10px 20px', background: '#8b5cf6', color: '#fff', border: 'none',
     borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer',
@@ -43,7 +43,7 @@ const s = {
     display: 'inline-flex', alignItems: 'center', gap: 6,
   },
   toggleBtn: { background: 'none', border: 'none', color: '#8b5cf6', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0 },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  table: { width: '100%', minWidth: 640, borderCollapse: 'collapse', fontSize: 13 },
   th: { padding: '8px 10px', background: '#f8fafc', textAlign: 'left', fontWeight: 600, color: '#64748b', fontSize: 11, textTransform: 'uppercase' },
   td: { padding: '8px 10px', borderBottom: '1px solid #f1f5f9', color: '#374151' },
   acumuladoRow: { background: '#faf5ff' },
@@ -153,14 +153,14 @@ export default function MetaAudiencesPage() {
 
         {periods.length > 0 && (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
               <label style={{ ...s.label, marginBottom: 0 }}>Períodos a incluir ({selectedPeriods.size} de {periods.length})</label>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button style={s.toggleBtn} onClick={() => setSelectedPeriods(new Set(periods.map(p => p.id)))}>Todos</button>
                 <button style={s.toggleBtn} onClick={() => setSelectedPeriods(new Set())}>Ninguno</button>
               </div>
             </div>
-            <div style={s.periodsGrid}>
+            <div className="periods-grid" style={s.periodsGrid}>
               {periods.map(p => (
                 <label key={p.id} style={s.periodChip(selectedPeriods.has(p.id))}>
                   <input
@@ -191,7 +191,7 @@ export default function MetaAudiencesPage() {
           </div>
         )}
         {showConfig && (
-          <div style={s.configGrid}>
+          <div className="grid-3" style={s.configGrid}>
             <div style={s.field}>
               <label style={s.label}>Base de valor</label>
               <select style={s.select} value={cfg.valor_base} onChange={e => setCfg(c => ({ ...c, valor_base: e.target.value }))}>
@@ -261,6 +261,7 @@ export default function MetaAudiencesPage() {
             Umbral alto valor: {resultado.calculo.percentil_alto_valor ?? '—'} · Umbral bajo valor: {resultado.calculo.percentil_bajo_valor ?? '—'} ·
             {' '}Corte de recencia: {resultado.calculo.fecha_referencia}
           </div>
+          <div className="table-scroll">
           <table style={s.table}>
             <thead>
               <tr>
@@ -287,6 +288,7 @@ export default function MetaAudiencesPage() {
               ))}
             </tbody>
           </table>
+          </div>
           <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 12 }}>
             Dentro del ZIP: cada CSV listo para subir a Meta, un <code>LEEME_como_subir_a_meta.md</code> con los pasos y nombres ya armados,
             y un <code>_diagnostico_clientes.csv</code> para auditar por qué quedó cada cliente en su segmento.

@@ -108,7 +108,7 @@ function MergeProductsCard({ storeId, products, onMerged }) {
         fusiónalos aquí para que compartan el mismo gasto de pauta y reporte financiero.
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto', gap: 8, alignItems: 'end', marginBottom: 10 }}>
+      <div className="merge-row" style={{ marginBottom: 10 }}>
         <div>
           <label style={s.label}>Producto duplicado</label>
           <select style={s.select} value={fromKey} onChange={e => setFromKey(e.target.value)}>
@@ -258,7 +258,7 @@ function AdSpendCard({ periodId, storeId, products, departments }) {
         departamento real de envío — el cruce geográfico es una aproximación.
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+      <div className="grid-2" style={{ marginBottom: 12 }}>
         <div>
           <label style={s.label}>Plataforma</label>
           <select style={s.select} value={platform} onChange={e => setPlatform(e.target.value)}>
@@ -554,7 +554,7 @@ export default function Upload() {
           </select>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+        <div className="grid-2" style={{ marginBottom: 18 }}>
           <div>
             <label style={s.label}>Mes del cierre</label>
             <select style={s.select} value={month} onChange={e => setMonth(Number(e.target.value))}>

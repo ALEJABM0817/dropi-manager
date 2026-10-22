@@ -71,7 +71,7 @@ function Highlights({ series }) {
   if (caidas.length === 0 && subidas.length === 0) return null;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+    <div className="grid-2" style={{ marginBottom: 20 }}>
       {caidas.length > 0 && (
         <div style={{ background: '#fef2f2', borderRadius: 10, padding: '14px 18px' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#dc2626', marginBottom: 8 }}>📉 Perdieron ganancia</div>

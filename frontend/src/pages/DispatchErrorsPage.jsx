@@ -11,7 +11,7 @@ const s = {
   title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
   sub: { fontSize: 13, color: '#64748b', marginBottom: 20 },
   noData: { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
-  summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 },
+  summaryGrid: { marginBottom: 24 },
   summaryCard: (color, bg) => ({
     background: bg, borderRadius: 10, padding: '16px 20px',
     boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderLeft: `4px solid ${color}`,
@@ -24,12 +24,12 @@ const s = {
   },
   sectionHeader: (color) => ({
     padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    cursor: 'pointer', borderLeft: `4px solid ${color}`,
+    flexWrap: 'wrap', gap: 10, cursor: 'pointer', borderLeft: `4px solid ${color}`,
   }),
   sectionTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b' },
   sectionSub: { fontSize: 12, color: '#64748b', marginTop: 2 },
   badge: (bg, color) => ({ padding: '4px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, background: bg, color }),
-  table: { width: '100%', borderCollapse: 'collapse' },
+  table: { width: '100%', minWidth: 560, borderCollapse: 'collapse' },
   th: { padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b',
         textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', whiteSpace: 'nowrap' },
   td: { padding: '9px 14px', borderBottom: '1px solid #f1f5f9', fontSize: 13, color: '#374151' },
@@ -178,7 +178,7 @@ export default function DispatchErrorsPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
         <div>
           <div style={s.title}>Errores de Despacho</div>
           <div style={s.sub}>
@@ -202,7 +202,7 @@ export default function DispatchErrorsPage() {
 
       {period && data && (
         <>
-          <div style={s.summaryGrid}>
+          <div className="grid-4" style={s.summaryGrid}>
             <div style={s.summaryCard('#f59e0b', '#fffbeb')}>
               <div style={s.summaryVal('#f59e0b')}>{totalDetectados}</div>
               <div style={s.summaryLabel}>Errores detectados</div>

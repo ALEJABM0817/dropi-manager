@@ -49,6 +49,14 @@
   .grid-3, .grid-4, .grid-5 { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* Month-checkbox pickers (Audiencias Meta) — 4 across, 2 on mobile. */
+.periods-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+@media (max-width: 768px) {
+  .periods-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* Wrap any wide <table> in <div className="table-scroll"> so it scrolls
    horizontally on narrow screens instead of breaking the page layout. */
 .table-scroll {
@@ -66,4 +74,14 @@
 }
 @media (max-width: 600px) {
   .profit-bar-row { grid-template-columns: 96px 1fr 72px; gap: 6px; }
+}
+
+/* Upload.jsx "merge duplicate products" row: select → arrow → select — the
+   arrow column only makes sense side-by-side, so hide it once stacked. */
+.merge-row {
+  display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 8px; align-items: end;
+}
+@media (max-width: 600px) {
+  .merge-row { grid-template-columns: 1fr; }
+  .merge-row > div:nth-child(2) { display: none; }
 }
