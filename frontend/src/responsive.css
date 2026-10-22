@@ -20,7 +20,7 @@
 
   .app-topbar {
     display: flex; align-items: center; gap: 14px;
-    padding: 14px 16px; background: #1e293b; color: #fff;
+    padding: 14px 16px; background: linear-gradient(185deg, #171A2E 0%, #121426 100%); color: #fff;
     position: sticky; top: 0; z-index: 500;
   }
   .app-topbar button {
