@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import api from '../api/client';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD } from '../theme';
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -13,29 +14,29 @@ function previousMonth() {
 }
 
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub: { fontSize: 13, color: '#64748b', marginBottom: 24 },
-  card: { background: '#fff', borderRadius: 10, padding: '28px 32px', boxShadow: '0 1px 4px rgba(0,0,0,.06)', maxWidth: 560, marginBottom: 20 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub: { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 24 },
+  card: { background: '#fff', borderRadius: RADIUS.card, padding: '28px 32px', boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, maxWidth: 560, marginBottom: 20 },
   group: { marginBottom: 18 },
-  label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 },
-  select: { width: '100%', padding: '9px 12px', border: '1.5px solid #e2e8f0', borderRadius: 7, fontSize: 14, background: '#fff' },
+  label: { display: 'block', fontSize: 13, fontWeight: 600, color: COLOR.text, marginBottom: 6 },
+  select: { width: '100%', padding: '9px 12px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control, fontSize: 14, background: '#fff' },
   dropzone: (drag, hasFile) => ({
-    border: `2px dashed ${drag ? '#3b82f6' : hasFile ? '#22c55e' : '#cbd5e1'}`,
-    borderRadius: 10, padding: '28px 16px', textAlign: 'center',
-    background: drag ? '#eff6ff' : hasFile ? '#f0fdf4' : '#f8fafc', cursor: 'pointer',
+    border: `2px dashed ${drag ? COLOR.accent : hasFile ? COLOR.success : '#CBD5E1'}`,
+    borderRadius: RADIUS.control, padding: '28px 16px', textAlign: 'center',
+    background: drag ? COLOR.accentBg : hasFile ? COLOR.successBg : '#F8F9FC', cursor: 'pointer',
     transition: 'all 0.2s', marginBottom: 12,
   }),
-  dropText: { fontSize: 13, color: '#64748b' },
-  dropFile: { fontSize: 13, color: '#22c55e', fontWeight: 600, marginTop: 6 },
+  dropText: { fontSize: 13, color: COLOR.textMuted },
+  dropFile: { fontSize: 13, color: COLOR.success, fontWeight: 600, marginTop: 6 },
   btn: (disabled) => ({
-    width: '100%', padding: '11px', background: disabled ? '#94a3b8' : '#3b82f6',
-    color: '#fff', border: 'none', borderRadius: 7, fontSize: 15, fontWeight: 700,
+    width: '100%', padding: '11px', background: disabled ? '#B5B9CC' : COLOR.accentGradient,
+    color: '#fff', border: 'none', borderRadius: RADIUS.control, fontSize: 15, fontWeight: 700,
     cursor: disabled ? 'not-allowed' : 'pointer',
   }),
   result: (ok) => ({
-    marginTop: 12, padding: '10px 14px', borderRadius: 7,
-    background: ok ? '#f0fdf4' : '#fef2f2',
-    color: ok ? '#16a34a' : '#dc2626',
+    marginTop: 12, padding: '10px 14px', borderRadius: RADIUS.control,
+    background: ok ? COLOR.successBg : COLOR.dangerBg,
+    color: ok ? COLOR.success : COLOR.danger,
     fontSize: 13, fontWeight: 600,
   }),
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import api from '../api/client';
 import PeriodSelector from '../components/PeriodSelector';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD } from '../theme';
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
@@ -63,45 +64,45 @@ function PctBadge({ value, color }) {
 }
 
 const s = {
-  title:   { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub:     { fontSize: 13, color: '#64748b', marginBottom: 20 },
+  title:   { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub:     { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
   toolbar: { display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' },
   searchBox: {
-    padding: '8px 12px', border: '1.5px solid #e2e8f0', borderRadius: 8,
-    fontSize: 14, flex: 1, minWidth: 200, maxWidth: 320, color: '#1e293b',
+    padding: '8px 12px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control,
+    fontSize: 14, flex: 1, minWidth: 200, maxWidth: 320, color: COLOR.ink,
   },
   sortBtn: (active) => ({
-    padding: '6px 12px', border: `1.5px solid ${active ? '#3b82f6' : '#e2e8f0'}`,
-    borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-    background: active ? '#eff6ff' : '#fff', color: active ? '#3b82f6' : '#64748b',
+    padding: '6px 12px', border: `1.5px solid ${active ? COLOR.accent : COLOR.border}`,
+    borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+    background: active ? COLOR.accentBg : '#fff', color: active ? COLOR.accent : COLOR.textMuted,
   }),
   table:   {
     width: '100%', minWidth: 700, borderCollapse: 'collapse',
-    background: '#fff', borderRadius: 10, overflow: 'hidden',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 24,
+    background: '#fff', borderRadius: RADIUS.card, overflow: 'hidden',
+    border: `1px solid ${COLOR.border}`, boxShadow: SHADOW_CARD, marginBottom: 24,
   },
   th: (clickable) => ({
-    padding: '12px 14px', background: '#f8fafc', textAlign: 'left',
-    fontWeight: 700, color: '#64748b', fontSize: 12,
+    padding: '12px 16px', background: '#FAFAFD', textAlign: 'left',
+    fontWeight: 700, color: COLOR.textFaint, fontSize: 11,
     textTransform: 'uppercase', letterSpacing: '0.4px',
-    borderBottom: '1px solid #e2e8f0',
+    borderBottom: `1px solid ${COLOR.border}`,
     cursor: clickable ? 'pointer' : 'default',
     userSelect: 'none', whiteSpace: 'nowrap',
   }),
-  td:      { padding: '11px 14px', borderBottom: '1px solid #f1f5f9', fontSize: 14, color: '#374151' },
-  expandRow: { background: '#f8fafc' },
-  expandCell: { padding: '0 14px 14px 40px', borderBottom: '1px solid #e2e8f0' },
+  td:      { padding: '12px 16px', borderBottom: `1px solid ${COLOR.borderSoft}`, fontSize: 13.5, color: COLOR.inkSoft },
+  expandRow: { background: '#FAFAFD' },
+  expandCell: { padding: '0 14px 14px 40px', borderBottom: `1px solid ${COLOR.border}` },
   subTable: { width: '100%', minWidth: 500, borderCollapse: 'collapse', fontSize: 13 },
-  subTh:   { padding: '8px 10px', fontWeight: 600, color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', textAlign: 'left', borderBottom: '1px solid #e2e8f0', background: '#f1f5f9' },
-  subTd:   { padding: '8px 10px', borderBottom: '1px solid #f8fafc', color: '#374151' },
-  noData:  { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
+  subTh:   { padding: '8px 10px', fontWeight: 600, color: COLOR.textFaint, fontSize: 11, textTransform: 'uppercase', textAlign: 'left', borderBottom: `1px solid ${COLOR.border}`, background: '#F1F2F7' },
+  subTd:   { padding: '8px 10px', borderBottom: `1px solid ${COLOR.borderSoft}`, color: COLOR.text },
+  noData:  { textAlign: 'center', padding: 48, color: COLOR.textMuted, fontSize: 14 },
   summaryGrid: { marginBottom: 20 },
   summaryCard: (color, bg) => ({
-    background: bg, borderRadius: 10, padding: '16px 20px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderLeft: `4px solid ${color}`,
+    background: bg, borderRadius: RADIUS.card, padding: '18px 22px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, borderTop: `3px solid ${color}`,
   }),
-  summaryVal: (color) => ({ fontSize: 24, fontWeight: 800, color }),
-  summaryLabel: { fontSize: 12, color: '#64748b', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' },
+  summaryVal: (color) => ({ fontSize: 24, fontWeight: 800, color, letterSpacing: '-0.4px' }),
+  summaryLabel: { fontSize: 12, color: COLOR.textMuted, marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' },
 };
 
 const SORT_OPTIONS = [

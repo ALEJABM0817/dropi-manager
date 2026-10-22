@@ -3,37 +3,38 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import api from '../api/client';
 import PeriodSelector from '../components/PeriodSelector';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD, btnPrimary } from '../theme';
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
 
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub: { fontSize: 13, color: '#64748b', marginBottom: 20 },
-  noData: { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub: { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
+  noData: { textAlign: 'center', padding: 48, color: COLOR.textMuted, fontSize: 14 },
   summaryGrid: { marginBottom: 24 },
   summaryCard: (color, bg) => ({
-    background: bg, borderRadius: 10, padding: '16px 20px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderLeft: `4px solid ${color}`,
+    background: bg, borderRadius: RADIUS.card, padding: '18px 22px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, borderTop: `3px solid ${color}`,
   }),
-  summaryVal: (color) => ({ fontSize: 24, fontWeight: 800, color }),
-  summaryLabel: { fontSize: 12, color: '#64748b', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' },
+  summaryVal: (color) => ({ fontSize: 24, fontWeight: 800, color, letterSpacing: '-0.4px' }),
+  summaryLabel: { fontSize: 12, color: COLOR.textMuted, marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' },
   section: {
-    background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+    background: '#fff', borderRadius: RADIUS.card, boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`,
     marginBottom: 20, overflow: 'hidden',
   },
   sectionHeader: (color) => ({
     padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    flexWrap: 'wrap', gap: 10, cursor: 'pointer', borderLeft: `4px solid ${color}`,
+    flexWrap: 'wrap', gap: 10, cursor: 'pointer', borderLeft: `3px solid ${color}`,
   }),
-  sectionTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b' },
-  sectionSub: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  badge: (bg, color) => ({ padding: '4px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, background: bg, color }),
+  sectionTitle: { fontFamily: FONT_HEADING, fontSize: 15, fontWeight: 700, color: COLOR.inkSoft },
+  sectionSub: { fontSize: 12, color: COLOR.textMuted, marginTop: 2 },
+  badge: (bg, color) => ({ padding: '4px 12px', borderRadius: RADIUS.pill, fontSize: 13, fontWeight: 700, background: bg, color }),
   table: { width: '100%', minWidth: 560, borderCollapse: 'collapse' },
-  th: { padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b',
-        textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', whiteSpace: 'nowrap' },
-  td: { padding: '9px 14px', borderBottom: '1px solid #f1f5f9', fontSize: 13, color: '#374151' },
-  emptyMsg: { padding: '18px 20px', color: '#94a3b8', fontSize: 13, textAlign: 'center' },
+  th: { padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: COLOR.textFaint,
+        textTransform: 'uppercase', borderBottom: `1px solid ${COLOR.border}`, background: '#FAFAFD', whiteSpace: 'nowrap' },
+  td: { padding: '10px 14px', borderBottom: `1px solid ${COLOR.borderSoft}`, fontSize: 13, color: COLOR.text },
+  emptyMsg: { padding: '18px 20px', color: COLOR.textMuted, fontSize: 13, textAlign: 'center' },
 };
 
 function EstatusBadge({ estatus }) {
@@ -188,10 +189,8 @@ export default function DispatchErrorsPage() {
           </div>
         </div>
         {period && data && totalDetectados > 0 && (
-          <button onClick={exportPDF}
-            style={{ padding: '8px 16px', background: '#dc2626', color: '#fff', border: 'none',
-                     borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            ⬇️ Descargar PDF
+          <button onClick={exportPDF} style={{ ...btnPrimary, whiteSpace: 'nowrap' }}>
+            Descargar PDF
           </button>
         )}
       </div>

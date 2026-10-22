@@ -1,29 +1,30 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../api/client';
 import PeriodSelector from '../components/PeriodSelector';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD } from '../theme';
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
 
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub: { fontSize: 13, color: '#64748b', marginBottom: 20 },
-  noData: { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub: { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
+  noData: { textAlign: 'center', padding: 48, color: COLOR.textMuted, fontSize: 14 },
   section: {
-    background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+    background: '#fff', borderRadius: RADIUS.card, boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`,
     marginBottom: 20, overflow: 'hidden',
   },
   sectionHeader: (color) => ({
-    padding: '16px 20px', borderLeft: `4px solid ${color}`,
+    padding: '16px 20px', borderLeft: `3px solid ${color}`,
   }),
-  sectionTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b' },
-  sectionSub: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  sectionTitle: { fontFamily: FONT_HEADING, fontSize: 15, fontWeight: 700, color: COLOR.inkSoft },
+  sectionSub: { fontSize: 12, color: COLOR.textMuted, marginTop: 2 },
   row: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6,
-    padding: '12px 20px', borderTop: '1px solid #f1f5f9', fontSize: 13,
+    padding: '12px 20px', borderTop: `1px solid ${COLOR.borderSoft}`, fontSize: 13,
   },
-  emptyMsg: { padding: '18px 20px', color: '#94a3b8', fontSize: 13, textAlign: 'center' },
-  pill: (bg, color) => ({ padding: '3px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700, background: bg, color }),
+  emptyMsg: { padding: '18px 20px', color: COLOR.textMuted, fontSize: 13, textAlign: 'center' },
+  pill: (bg, color) => ({ padding: '3px 10px', borderRadius: RADIUS.pill, fontSize: 12, fontWeight: 700, background: bg, color }),
 };
 
 function Section({ title, icon, color, description, count, children }) {

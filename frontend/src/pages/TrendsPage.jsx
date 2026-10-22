@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/client';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD, btnPrimary } from '../theme';
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
@@ -10,39 +11,36 @@ const MONTHS = [
 ];
 
 const DIMENSIONS = [
-  { key: 'producto', label: '🏷️ Productos' },
-  { key: 'departamento', label: '🗺️ Departamentos' },
-  { key: 'transportadora', label: '📦 Transportadoras' },
+  { key: 'producto', label: 'Productos' },
+  { key: 'departamento', label: 'Departamentos' },
+  { key: 'transportadora', label: 'Transportadoras' },
 ];
 
 const MIN_VOLUME = 5; // ignore items with too few orders in a month — too noisy to call a real trend
 
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub: { fontSize: 13, color: '#64748b', marginBottom: 20 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub: { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
   selectorBar: {
     display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 20,
-    background: '#fff', padding: '16px 20px', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+    background: '#fff', padding: '16px 20px', borderRadius: RADIUS.card, boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`,
   },
   select: {
-    padding: '8px 12px', border: '1.5px solid #e2e8f0', borderRadius: 7, fontSize: 14,
-    background: '#fff', color: '#1e293b', cursor: 'pointer', minWidth: 160,
+    padding: '8px 12px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control, fontSize: 14,
+    background: '#fff', color: COLOR.ink, cursor: 'pointer', minWidth: 160,
   },
-  label: { fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  btn: {
-    padding: '8px 16px', background: '#8b5cf6', color: '#fff', border: 'none',
-    borderRadius: 7, fontSize: 14, fontWeight: 600, cursor: 'pointer',
-  },
+  label: { fontSize: 12, fontWeight: 600, color: COLOR.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' },
+  btn: btnPrimary,
   tabBtn: (active) => ({
     padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600,
-    background: active ? '#8b5cf6' : '#f1f5f9', color: active ? '#fff' : '#64748b',
+    background: active ? COLOR.accent : '#F1F2F7', color: active ? '#fff' : COLOR.textMuted,
   }),
   table: {
-    background: '#fff', borderRadius: 10, padding: '22px 26px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 16,
+    background: '#fff', borderRadius: RADIUS.card, padding: '22px 26px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 16,
   },
-  tableTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  noData: { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
+  tableTitle: { fontFamily: FONT_HEADING, fontSize: 15, fontWeight: 700, color: COLOR.inkSoft, marginBottom: 4 },
+  noData: { textAlign: 'center', padding: 48, color: COLOR.textMuted, fontSize: 14 },
 };
 
 function fmtCompact(n) {

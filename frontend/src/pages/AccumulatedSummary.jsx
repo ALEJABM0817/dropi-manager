@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../api/client';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD, btnPrimary } from '../theme';
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
@@ -10,29 +11,26 @@ const MONTHS = [
 ];
 
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub: { fontSize: 13, color: '#64748b', marginBottom: 20 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub: { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
   table: {
-    background: '#fff', borderRadius: 10, padding: '22px 26px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 16,
+    background: '#fff', borderRadius: RADIUS.card, padding: '22px 26px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 16,
   },
-  tableTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 16 },
-  divider: { borderTop: '2px solid #1e293b', margin: '10px 0' },
+  tableTitle: { fontFamily: FONT_HEADING, fontSize: 15, fontWeight: 700, color: COLOR.inkSoft, marginBottom: 16 },
+  divider: { borderTop: `2px solid ${COLOR.ink}`, margin: '10px 0' },
   totalRow: { display: 'flex', justifyContent: 'space-between', padding: '9px 0', fontWeight: 700, fontSize: 15 },
-  noData: { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
+  noData: { textAlign: 'center', padding: 48, color: COLOR.textMuted, fontSize: 14 },
   selectorBar: {
     display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 24,
-    background: '#fff', padding: '16px 20px', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+    background: '#fff', padding: '16px 20px', borderRadius: RADIUS.card, boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`,
   },
   select: {
-    padding: '8px 12px', border: '1.5px solid #e2e8f0', borderRadius: 7, fontSize: 14,
-    background: '#fff', color: '#1e293b', cursor: 'pointer', minWidth: 160,
+    padding: '8px 12px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control, fontSize: 14,
+    background: '#fff', color: COLOR.ink, cursor: 'pointer', minWidth: 160,
   },
-  label: { fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  btn: {
-    padding: '8px 16px', background: '#8b5cf6', color: '#fff', border: 'none',
-    borderRadius: 7, fontSize: 14, fontWeight: 600, cursor: 'pointer',
-  },
+  label: { fontSize: 12, fontWeight: 600, color: COLOR.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' },
+  btn: btnPrimary,
 };
 
 // Compact currency for on-bar labels (e.g. "$8.0M", "$340K") — full fmt() is too wide to

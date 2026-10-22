@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../api/client';
 import PeriodSelector from '../components/PeriodSelector';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD } from '../theme';
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
@@ -13,14 +14,14 @@ const CATEGORY_META = {
 };
 
 const s = {
-  title:   { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub:     { fontSize: 13, color: '#64748b', marginBottom: 20 },
+  title:   { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub:     { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
   grid3:   { marginBottom: 20 },
   grid2:   { marginBottom: 20 },
   card:    (bg, border) => ({
-    background: bg, borderRadius: 10, padding: '18px 22px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)',
-    border: `1.5px solid ${border}20`,
+    background: bg, borderRadius: RADIUS.card, padding: '20px 24px',
+    boxShadow: SHADOW_CARD,
+    border: `1px solid ${border}30`,
   }),
   bigPct:  (color) => ({ fontSize: 36, fontWeight: 800, color, lineHeight: 1 }),
   label:   { fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 4 },
@@ -55,10 +56,10 @@ const s = {
 
   // Cost panel
   costCard: {
-    background: '#fff', borderRadius: 10, padding: '20px 24px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 20,
+    background: '#fff', borderRadius: RADIUS.card, padding: '20px 24px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 20,
   },
-  costTitle: { fontSize: 14, fontWeight: 700, color: '#1e293b', marginBottom: 14 },
+  costTitle: { fontFamily: FONT_HEADING, fontSize: 14.5, fontWeight: 700, color: COLOR.inkSoft, marginBottom: 14 },
   costRow:   { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 },
   costTotal: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontWeight: 700, fontSize: 15, color: '#f59e0b' },
 
@@ -68,7 +69,7 @@ const s = {
     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
   },
   modal: {
-    background: '#fff', borderRadius: 12, width: '100%', maxWidth: 860,
+    background: '#fff', borderRadius: RADIUS.card, width: '100%', maxWidth: 860,
     maxHeight: '85vh', display: 'flex', flexDirection: 'column',
     boxShadow: '0 20px 60px rgba(0,0,0,.25)',
   },

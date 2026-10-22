@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/client';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD, btnPrimary } from '../theme';
 
 const MONTHS = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -7,48 +8,45 @@ const MONTHS = [
 ];
 
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub: { fontSize: 13, color: '#64748b', marginBottom: 20 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub: { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
   card: {
-    background: '#fff', borderRadius: 10, padding: '20px 24px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 16,
+    background: '#fff', borderRadius: RADIUS.card, padding: '20px 24px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 16,
   },
-  cardTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 14 },
-  label: { fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4, display: 'block' },
+  cardTitle: { fontFamily: FONT_HEADING, fontSize: 15, fontWeight: 700, color: COLOR.inkSoft, marginBottom: 14 },
+  label: { fontSize: 12, fontWeight: 600, color: COLOR.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4, display: 'block' },
   select: {
-    padding: '8px 12px', border: '1.5px solid #e2e8f0', borderRadius: 7, fontSize: 14,
-    background: '#fff', color: '#1e293b', cursor: 'pointer', minWidth: 200,
+    padding: '8px 12px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control, fontSize: 14,
+    background: '#fff', color: COLOR.ink, cursor: 'pointer', minWidth: 200,
   },
   input: {
-    padding: '7px 10px', border: '1.5px solid #e2e8f0', borderRadius: 7, fontSize: 14,
-    color: '#1e293b', width: 140,
+    padding: '7px 10px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control, fontSize: 14,
+    color: COLOR.ink, width: 140,
   },
   periodsGrid: { marginTop: 10 },
   periodChip: (checked) => ({
-    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8,
-    border: `1.5px solid ${checked ? '#8b5cf6' : '#e2e8f0'}`, background: checked ? '#f5f3ff' : '#fff',
-    cursor: 'pointer', fontSize: 13, fontWeight: 600, color: checked ? '#6d28d9' : '#64748b',
+    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10,
+    border: `1.5px solid ${checked ? COLOR.accent : COLOR.border}`, background: checked ? COLOR.accentBg : '#fff',
+    cursor: 'pointer', fontSize: 13, fontWeight: 600, color: checked ? COLOR.accent : COLOR.textMuted,
   }),
   configGrid: { marginTop: 4 },
   field: { display: 'flex', flexDirection: 'column', gap: 4 },
   btnRow: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 16 },
-  btn: {
-    padding: '10px 20px', background: '#8b5cf6', color: '#fff', border: 'none',
-    borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer',
-  },
+  btn: btnPrimary,
   btnDisabled: { opacity: 0.5, cursor: 'not-allowed' },
   btnSecondary: {
-    padding: '10px 20px', background: '#f1f5f9', color: '#1e293b', border: 'none',
-    borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer', textDecoration: 'none',
+    padding: '10px 20px', background: '#fff', color: COLOR.text, border: `1px solid ${COLOR.border}`,
+    borderRadius: RADIUS.control, fontSize: 14, fontWeight: 700, cursor: 'pointer', textDecoration: 'none',
     display: 'inline-flex', alignItems: 'center', gap: 6,
   },
-  toggleBtn: { background: 'none', border: 'none', color: '#8b5cf6', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0 },
+  toggleBtn: { background: 'none', border: 'none', color: COLOR.accent, fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0 },
   table: { width: '100%', minWidth: 640, borderCollapse: 'collapse', fontSize: 13 },
-  th: { padding: '8px 10px', background: '#f8fafc', textAlign: 'left', fontWeight: 600, color: '#64748b', fontSize: 11, textTransform: 'uppercase' },
-  td: { padding: '8px 10px', borderBottom: '1px solid #f1f5f9', color: '#374151' },
-  acumuladoRow: { background: '#faf5ff' },
-  errorBox: { background: '#fef2f2', color: '#dc2626', padding: '12px 16px', borderRadius: 8, fontSize: 13, marginBottom: 16 },
-  noData: { textAlign: 'center', padding: 40, color: '#94a3b8', fontSize: 14 },
+  th: { padding: '10px 12px', background: '#FAFAFD', textAlign: 'left', fontWeight: 700, color: COLOR.textFaint, fontSize: 11, textTransform: 'uppercase', borderBottom: `1px solid ${COLOR.border}` },
+  td: { padding: '10px 12px', borderBottom: `1px solid ${COLOR.borderSoft}`, color: COLOR.text },
+  acumuladoRow: { background: COLOR.accentBg },
+  errorBox: { background: COLOR.dangerBg, color: COLOR.danger, padding: '12px 16px', borderRadius: 10, fontSize: 13, marginBottom: 16 },
+  noData: { textAlign: 'center', padding: 40, color: COLOR.textMuted, fontSize: 14 },
 };
 
 // Piso de bajo valor ~= 50% de la ganancia típica por ticket de cada tienda

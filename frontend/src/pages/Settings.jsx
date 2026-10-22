@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/client';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD } from '../theme';
 
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub: { fontSize: 13, color: '#64748b', marginBottom: 24 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub: { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 24 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 },
-  card: { background: '#fff', borderRadius: 10, padding: '20px 24px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' },
-  cardTitle: { fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 14 },
+  card: { background: '#fff', borderRadius: RADIUS.card, padding: '20px 24px', boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}` },
+  cardTitle: { fontFamily: FONT_HEADING, fontSize: 15, fontWeight: 700, color: COLOR.inkSoft, marginBottom: 14 },
   addRow: { display: 'flex', gap: 8, marginBottom: 14 },
-  input: { flex: 1, padding: '8px 10px', border: '1.5px solid #e2e8f0', borderRadius: 6, fontSize: 14 },
-  select: { padding: '8px 10px', border: '1.5px solid #e2e8f0', borderRadius: 6, fontSize: 13, background: '#fff' },
-  addBtn: { padding: '8px 14px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  input: { flex: 1, padding: '8px 10px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control, fontSize: 14 },
+  select: { padding: '8px 10px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control, fontSize: 13, background: '#fff' },
+  addBtn: { padding: '8px 14px', background: COLOR.accentGradient, color: '#fff', border: 'none', borderRadius: RADIUS.control, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
   list: { listStyle: 'none' },
-  listItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f1f5f9' },
-  itemName: { fontSize: 14, color: '#374151' },
-  badge: (color) => ({ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: color, color: '#fff', marginLeft: 6, textTransform: 'uppercase' }),
-  delBtn: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 16, padding: '0 4px' },
-  empty: { fontSize: 13, color: '#94a3b8', textAlign: 'center', padding: 16 },
+  listItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${COLOR.borderSoft}` },
+  itemName: { fontSize: 14, color: COLOR.text },
+  badge: (color) => ({ fontSize: 11, padding: '2px 7px', borderRadius: RADIUS.pill, background: color, color: '#fff', marginLeft: 6, textTransform: 'uppercase' }),
+  delBtn: { background: 'none', border: 'none', color: COLOR.danger, cursor: 'pointer', fontSize: 16, padding: '0 4px' },
+  empty: { fontSize: 13, color: COLOR.textMuted, textAlign: 'center', padding: 16 },
 };
 
 const PLATFORM_COLORS = { meta: '#1877f2', tiktok: '#ff0050', google: '#ea4335', otro: '#64748b' };

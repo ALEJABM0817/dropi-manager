@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import api from '../api/client';
 import PeriodSelector from '../components/PeriodSelector';
+import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD } from '../theme';
 
 const pct = (a, b) => (b > 0 ? ((a / b) * 100).toFixed(1) : '0.0');
 const fmt = n => '$ ' + Math.round(n || 0).toLocaleString('es-CO');
@@ -28,7 +29,7 @@ function ProfitBarChart({ products, onSelect }) {
   const sorted = [...products].sort((a, b) => b.resultado_neto - a.resultado_neto);
   const maxAbs = Math.max(...sorted.map(p => Math.abs(p.resultado_neto)), 1);
   return (
-    <div style={{ background: '#fff', borderRadius: 10, padding: '18px 20px', boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 20 }}>
+    <div style={{ background: '#fff', borderRadius: RADIUS.card, padding: '20px 22px', boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 20 }}>
       <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginBottom: 14 }}>
         Resultado neto estimado por producto (mayor a menor)
       </div>
@@ -60,24 +61,24 @@ function ProfitBarChart({ products, onSelect }) {
 }
 
 const s = {
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
-  sub:   { fontSize: 13, color: '#64748b', marginBottom: 20 },
-  noData: { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
+  title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
+  sub:   { fontSize: 13.5, color: COLOR.textMuted, marginBottom: 22 },
+  noData: { textAlign: 'center', padding: 48, color: COLOR.textMuted, fontSize: 14 },
   grid4: { marginBottom: 20 },
   card: (color) => ({
-    background: '#fff', borderRadius: 10, padding: '14px 18px',
-    boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderLeft: `4px solid ${color}`,
+    background: '#fff', borderRadius: RADIUS.card, padding: '18px 20px',
+    boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, borderTop: `3px solid ${color}`,
   }),
-  cardTitle: { fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 },
-  cardVal: (color) => ({ fontSize: 22, fontWeight: 800, color }),
-  table: { width: '100%', minWidth: 640, borderCollapse: 'collapse', background: '#fff', borderRadius: 10, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' },
-  th: (clickable) => ({ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', borderBottom: '2px solid #e2e8f0', cursor: clickable ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap' }),
-  td: { padding: '9px 14px', borderBottom: '1px solid #f1f5f9', fontSize: 14, whiteSpace: 'nowrap' },
+  cardTitle: { fontSize: 11, fontWeight: 700, color: COLOR.textFaint, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 },
+  cardVal: (color) => ({ fontSize: 22, fontWeight: 800, color, letterSpacing: '-0.3px' }),
+  table: { width: '100%', minWidth: 640, borderCollapse: 'collapse', background: '#fff', borderRadius: RADIUS.card, overflow: 'hidden', border: `1px solid ${COLOR.border}`, boxShadow: SHADOW_CARD },
+  th: (clickable) => ({ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: COLOR.textFaint, textTransform: 'uppercase', borderBottom: `1px solid ${COLOR.border}`, background: '#FAFAFD', cursor: clickable ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap' }),
+  td: { padding: '10px 14px', borderBottom: `1px solid ${COLOR.borderSoft}`, fontSize: 13.5, whiteSpace: 'nowrap' },
   modal: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: 60, zIndex: 1000 },
-  modalInner: { background: '#fff', borderRadius: 12, padding: '24px 28px', maxWidth: 900, width: '95%', maxHeight: '80vh', overflow: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,.15)' },
+  modalInner: { background: '#fff', borderRadius: RADIUS.card, padding: '24px 28px', maxWidth: 900, width: '95%', maxHeight: '80vh', overflow: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,.15)' },
   tabBtn: (active) => ({
     padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600,
-    background: active ? '#3b82f6' : '#f1f5f9', color: active ? '#fff' : '#64748b',
+    background: active ? COLOR.accent : '#F1F2F7', color: active ? '#fff' : COLOR.textMuted,
   }),
 };
 
