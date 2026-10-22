@@ -76,7 +76,7 @@ const s = {
     background: active ? '#eff6ff' : '#fff', color: active ? '#3b82f6' : '#64748b',
   }),
   table:   {
-    width: '100%', borderCollapse: 'collapse',
+    width: '100%', minWidth: 700, borderCollapse: 'collapse',
     background: '#fff', borderRadius: 10, overflow: 'hidden',
     boxShadow: '0 1px 4px rgba(0,0,0,.06)', marginBottom: 24,
   },
@@ -91,11 +91,11 @@ const s = {
   td:      { padding: '11px 14px', borderBottom: '1px solid #f1f5f9', fontSize: 14, color: '#374151' },
   expandRow: { background: '#f8fafc' },
   expandCell: { padding: '0 14px 14px 40px', borderBottom: '1px solid #e2e8f0' },
-  subTable: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  subTable: { width: '100%', minWidth: 500, borderCollapse: 'collapse', fontSize: 13 },
   subTh:   { padding: '8px 10px', fontWeight: 600, color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', textAlign: 'left', borderBottom: '1px solid #e2e8f0', background: '#f1f5f9' },
   subTd:   { padding: '8px 10px', borderBottom: '1px solid #f8fafc', color: '#374151' },
   noData:  { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
-  summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 20 },
+  summaryGrid: { marginBottom: 20 },
   summaryCard: (color, bg) => ({
     background: bg, borderRadius: 10, padding: '16px 20px',
     boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderLeft: `4px solid ${color}`,
@@ -277,7 +277,7 @@ export default function GeoPage() {
         <>
           {/* Summary cards */}
           {totals && (
-            <div style={s.summaryGrid}>
+            <div className="grid-4" style={s.summaryGrid}>
               <div style={s.summaryCard('#3b82f6', '#eff6ff')}>
                 <div style={s.summaryVal('#3b82f6')}>{deptRows.length}</div>
                 <div style={s.summaryLabel}>Departamentos</div>
@@ -335,6 +335,7 @@ export default function GeoPage() {
 
           {/* DEPT TABLE */}
           {tab === 'dept' && (
+            <div className="table-scroll">
             <table style={s.table}>
               <thead>
                 <tr>
@@ -413,6 +414,7 @@ export default function GeoPage() {
                             <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8, fontWeight: 600 }}>
                               Ciudades en {dept.departamento_destino}
                             </div>
+                            <div className="table-scroll">
                             <table style={s.subTable}>
                               <thead>
                                 <tr>
@@ -451,6 +453,7 @@ export default function GeoPage() {
                                 ))}
                               </tbody>
                             </table>
+                            </div>
                           </td>
                         </tr>
                       )}
@@ -459,12 +462,14 @@ export default function GeoPage() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
 
           {/* CARRIER TABLE — expandable carrier → dept → city */}
           {tab === 'carrier' && (() => {
             const maxC = Math.max(...carrierRows.map(r => r.total), 1);
             return (
+              <div className="table-scroll">
               <table style={s.table}>
                 <thead>
                   <tr>
@@ -606,11 +611,13 @@ export default function GeoPage() {
                   })}
                 </tbody>
               </table>
+              </div>
             );
           })()}
 
           {/* CITY TABLE */}
           {tab === 'city' && (
+            <div className="table-scroll">
             <table style={s.table}>
               <thead>
                 <tr>
@@ -657,6 +664,7 @@ export default function GeoPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
 
           {/* RENTABILIDAD TAB */}
@@ -668,7 +676,7 @@ export default function GeoPage() {
             const conPerdida = rows.filter(r => r.resultado_neto < 0).length;
             return (
               <>
-                <div style={s.summaryGrid}>
+                <div className="grid-4" style={s.summaryGrid}>
                   <div style={s.summaryCard('#16a34a', '#f0fdf4')}>
                     <div style={{ fontSize: 18, fontWeight: 800, color: '#16a34a' }}>{fmt(totalIngreso)}</div>
                     <div style={s.summaryLabel}>Ingreso neto (post-devolución)</div>
@@ -708,6 +716,7 @@ export default function GeoPage() {
 
                 {rows.length > 0 && <ProfitBarChart rows={rows} />}
 
+                <div className="table-scroll">
                 <table style={s.table}>
                   <thead>
                     <tr>
@@ -734,6 +743,7 @@ export default function GeoPage() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </>
             );
           })()}
