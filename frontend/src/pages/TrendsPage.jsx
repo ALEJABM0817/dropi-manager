@@ -289,9 +289,9 @@ export default function TrendsPage() {
                   <button key={p.id} onClick={() => togglePeriod(p.id)}
                     style={{
                       padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                      border: sel ? '2px solid #8b5cf6' : '1.5px solid #e2e8f0',
-                      background: sel ? '#f5f3ff' : '#fff',
-                      color: sel ? '#7c3aed' : '#64748b',
+                      border: sel ? `2px solid ${COLOR.accent}` : `1.5px solid ${COLOR.border}`,
+                      background: sel ? COLOR.accentBg : '#fff',
+                      color: sel ? COLOR.accent : COLOR.textMuted,
                     }}>
                     {MONTHS[p.month - 1].slice(0, 3)} {p.year}
                   </button>
