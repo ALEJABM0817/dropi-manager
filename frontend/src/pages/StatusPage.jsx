@@ -15,8 +15,8 @@ const CATEGORY_META = {
 const s = {
   title:   { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
   sub:     { fontSize: 13, color: '#64748b', marginBottom: 20 },
-  grid3:   { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 20 },
-  grid2:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 },
+  grid3:   { marginBottom: 20 },
+  grid2:   { marginBottom: 20 },
   card:    (bg, border) => ({
     background: bg, borderRadius: 10, padding: '18px 22px',
     boxShadow: '0 1px 4px rgba(0,0,0,.06)',
@@ -42,7 +42,7 @@ const s = {
   }),
 
   // Journey modal
-  journeyGrid: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, padding: '18px 24px' },
+  journeyGrid: { padding: '18px 24px' },
   journeyCard: (color, bg) => ({
     background: bg, borderRadius: 10, padding: '14px 16px', border: `1.5px solid ${color}30`,
   }),
@@ -78,8 +78,8 @@ const s = {
   },
   modalTitle: { fontSize: 16, fontWeight: 700, color: '#1e293b' },
   closeBtn:   { background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#94a3b8' },
-  modalBody:  { overflowY: 'auto', flex: 1 },
-  table:      { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  modalBody:  { overflowY: 'auto', overflowX: 'auto', flex: 1 },
+  table:      { width: '100%', minWidth: 520, borderCollapse: 'collapse', fontSize: 13 },
   th:         { padding: '10px 12px', background: '#f8fafc', textAlign: 'left', fontWeight: 600,
                 color: '#64748b', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.4px',
                 position: 'sticky', top: 0, borderBottom: '1px solid #e2e8f0' },
@@ -192,7 +192,7 @@ function JourneyModal({ period, estatus, onClose }) {
           {data && data.total === 0 && <div style={s.noData}>Sin pedidos en este estado</div>}
           {data && data.total > 0 && (
             <>
-              <div style={s.journeyGrid}>
+              <div className="grid-4" style={s.journeyGrid}>
                 <div style={s.journeyCard('#f59e0b', '#fffbeb')}>
                   <div style={s.journeyPct('#f59e0b')}>{pct(data.still_same.count)}%</div>
                   <div style={s.journeyLabel}>⏳ Sigue en {estatus}</div>
@@ -278,7 +278,7 @@ export default function StatusPage() {
       {period && breakdown && breakdown.total > 0 && (
         <>
           {/* Main 3 cards */}
-          <div style={s.grid3}>
+          <div className="grid-3" style={s.grid3}>
             {/* Entregados */}
             <div
               style={{ ...s.card(CATEGORY_META.entregado.bg, CATEGORY_META.entregado.color), cursor: 'pointer' }}

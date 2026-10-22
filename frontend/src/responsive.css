@@ -55,3 +55,15 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Product-ranking bar rows (name | bar | value) — fixed px columns break on
+   narrow screens, so shrink the name/value columns instead of stacking. */
+.profit-bar-row {
+  display: grid;
+  grid-template-columns: 220px 1fr 110px;
+  gap: 10px;
+  align-items: center;
+}
+@media (max-width: 600px) {
+  .profit-bar-row { grid-template-columns: 96px 1fr 72px; gap: 6px; }
+}

@@ -471,7 +471,7 @@ export default function Summary() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
         <div>
           <div style={s.title}>Resumen de Cierre</div>
           <div style={s.sub}>Todos los campos se guardan automáticamente al salir.</div>
@@ -496,7 +496,7 @@ export default function Summary() {
             <div style={s.tableTitle}>📊 Resumen de Estado · Del Excel</div>
 
             {/* Status cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+            <div className="grid-4" style={{ marginBottom: 16 }}>
               <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
                 <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>DESPACHADOS</div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: '#3b82f6' }}>{totalOrders}</div>
@@ -547,7 +547,8 @@ export default function Summary() {
             <div style={s.tableTitle}>📈 Embudo de Pedidos</div>
 
             {/* Tabla resumen de métricas */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 16 }}>
+            <div className="table-scroll">
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 16, minWidth: 560 }}>
               <thead>
                 <tr style={{ background: '#f8fafc' }}>
                   <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Métrica</th>
@@ -637,11 +638,12 @@ export default function Summary() {
                 </tr>
               </tbody>
             </table>
+            </div>
 
             {/* Detalle: desglose Excel vs manuales */}
             <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', marginBottom: 8 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 8 }}>Desglose</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid-2">
                 {/* Col izq: Entregados */}
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: '#22c55e', marginBottom: 4 }}>ENTREGADOS ({totalEntregadosGlobal})</div>
@@ -694,7 +696,8 @@ export default function Summary() {
           {byCarrier.length > 0 && (
             <div style={{ ...s.table, borderLeft: '4px solid #0ea5e9' }}>
               <div style={s.tableTitle}>📦 Por Transportadora</div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div className="table-scroll">
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
                 <thead>
                   <tr style={{ background: '#f8fafc' }}>
                     <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Transportadora</th>
@@ -747,6 +750,7 @@ export default function Summary() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
 
@@ -932,7 +936,7 @@ export default function Summary() {
                 se reparte según el % de pedidos despachados de cada línea este mes. Hombre + Dama siempre debe sumar
                 exactamente el TOTAL de arriba.
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div className="grid-2">
                 {['HOMBRE', 'DAMA'].map(key => {
                   const r = lineaResultado(key);
                   const icon = key === 'DAMA' ? '👗' : '👔';

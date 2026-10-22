@@ -37,8 +37,7 @@ function ProfitBarChart({ products, onSelect }) {
           const isLoss = p.resultado_neto < 0;
           const w = (Math.abs(p.resultado_neto) / maxAbs) * 100;
           return (
-            <div key={p.grupo} onClick={() => onSelect(p)}
-              style={{ display: 'grid', gridTemplateColumns: '220px 1fr 110px', gap: 10, alignItems: 'center', cursor: 'pointer' }}>
+            <div key={p.grupo} onClick={() => onSelect(p)} className="profit-bar-row" style={{ cursor: 'pointer' }}>
               <div style={{ fontSize: 12, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                 title={p.producto}>
                 {p.producto}
@@ -64,14 +63,14 @@ const s = {
   title: { fontSize: 22, fontWeight: 700, color: '#1e293b', marginBottom: 4 },
   sub:   { fontSize: 13, color: '#64748b', marginBottom: 20 },
   noData: { textAlign: 'center', padding: 48, color: '#94a3b8', fontSize: 14 },
-  grid4: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 },
+  grid4: { marginBottom: 20 },
   card: (color) => ({
     background: '#fff', borderRadius: 10, padding: '14px 18px',
     boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderLeft: `4px solid ${color}`,
   }),
   cardTitle: { fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 },
   cardVal: (color) => ({ fontSize: 22, fontWeight: 800, color }),
-  table: { width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 10, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' },
+  table: { width: '100%', minWidth: 640, borderCollapse: 'collapse', background: '#fff', borderRadius: 10, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' },
   th: (clickable) => ({ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', borderBottom: '2px solid #e2e8f0', cursor: clickable ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap' }),
   td: { padding: '9px 14px', borderBottom: '1px solid #f1f5f9', fontSize: 14, whiteSpace: 'nowrap' },
   modal: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: 60, zIndex: 1000 },
@@ -131,7 +130,7 @@ function DetailModal({ product, period, onClose }) {
               en la misma guía), se reparte proporcionalmente entre ellos según la cantidad — así el mismo pedido no infla la ganancia
               ni la pérdida en más de un producto. Solo se usa un promedio de la tienda cuando el pedido no tiene número de guía (excels antiguos).
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 14 }}>
+            <div className="grid-2" style={{ gap: 10, marginBottom: 14 }}>
               <div style={{ background: '#f0fdf4', borderRadius: 8, padding: '12px 14px' }}>
                 <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, marginBottom: 4 }}>INGRESO ESTIMADO</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#16a34a' }}>{fmt(f.ingreso_estimado)}</div>
@@ -165,6 +164,7 @@ function DetailModal({ product, period, onClose }) {
                 : 'Para ver ganancia/pérdida por departamento de este producto, sube en Cargar Excel → Publicidad un CSV con los desgloses de Campaña y Región activados a la vez.'}
             </div>
           )}
+          <div className="table-scroll">
           <table style={s.table}>
             <thead>
               <tr>
@@ -214,6 +214,7 @@ function DetailModal({ product, period, onClose }) {
               })}
             </tbody>
           </table>
+          </div>
           </>
         )}
       </div>
@@ -304,7 +305,7 @@ export default function ProductsPage() {
 
           {view === 'rentabilidad' ? (
             <>
-              <div style={s.grid4}>
+              <div className="grid-4" style={s.grid4}>
                 <div style={s.card('#16a34a')}>
                   <div style={s.cardTitle}>Ingreso estimado</div>
                   <div style={s.cardVal('#16a34a')}>{fmt(totalIngreso)}</div>
@@ -331,7 +332,7 @@ export default function ProductsPage() {
               </div>
 
               {peores.length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                <div className="grid-2" style={{ marginBottom: 20 }}>
                   <div style={{ background: '#fef2f2', borderRadius: 10, padding: '14px 18px' }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#dc2626', marginBottom: 8 }}>⚠️ Peores productos</div>
                     {peores.map(p => (
@@ -357,6 +358,7 @@ export default function ProductsPage() {
 
               <ProfitBarChart products={products} onSelect={setSelected} />
 
+              <div className="table-scroll">
               <table style={s.table}>
                 <thead>
                   <tr>
@@ -385,10 +387,11 @@ export default function ProductsPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </>
           ) : (
           <>
-          <div style={s.grid4}>
+          <div className="grid-4" style={s.grid4}>
             <div style={s.card('#3b82f6')}>
               <div style={s.cardTitle}>Productos</div>
               <div style={s.cardVal('#3b82f6')}>{products.length}</div>
@@ -410,6 +413,7 @@ export default function ProductsPage() {
             </div>
           </div>
 
+          <div className="table-scroll">
           <table style={s.table}>
             <thead>
               <tr>
@@ -483,6 +487,7 @@ export default function ProductsPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           <div style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', marginTop: 12 }}>
             Haz clic en un producto para ver desglose por departamento, ciudad, transportadora y variación
