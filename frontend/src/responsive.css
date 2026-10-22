@@ -1,0 +1,57 @@
+/* Mobile breakpoint used across the app: 768px */
+
+.app-topbar { display: none; }
+.app-shell { display: flex; min-height: 100vh; width: 100%; }
+
+@media (max-width: 768px) {
+  #root { display: block; }
+  .app-shell { display: block; }
+
+  .app-sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  .app-sidebar.open { transform: translateX(0); }
+
+  .app-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999;
+  }
+
+  .app-topbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; background: #1e293b; color: #fff;
+    position: sticky; top: 0; z-index: 500;
+  }
+  .app-topbar button {
+    background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 0;
+  }
+
+  .app-main { padding: 16px !important; }
+}
+
+/* Reusable responsive grid utilities — replace inline gridTemplateColumns
+   with these className values so a media query can actually override them
+   (an inline `style` prop always wins over a plain CSS class, so the
+   gridTemplateColumns itself must live here, not in the style object). */
+.grid-2, .grid-3, .grid-4, .grid-5 {
+  display: grid; gap: 16px;
+}
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-5 { grid-template-columns: repeat(5, 1fr); }
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; gap: 12px; }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .grid-3, .grid-4, .grid-5 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Wrap any wide <table> in <div className="table-scroll"> so it scrolls
+   horizontally on narrow screens instead of breaking the page layout. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

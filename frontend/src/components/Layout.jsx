@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 
 const NAV = [
@@ -27,7 +27,7 @@ const styles = {
     color: '#f8fafc',
   },
   logoSub: { fontSize: 11, color: '#94a3b8', fontWeight: 400, marginTop: 2 },
-  nav: { padding: '12px 0', flex: 1 },
+  nav: { padding: '12px 0', flex: 1, overflowY: 'auto' },
   navLink: (active) => ({
     display: 'flex', alignItems: 'center', gap: 10,
     padding: '10px 20px', textDecoration: 'none',
@@ -38,7 +38,7 @@ const styles = {
     transition: 'all 0.15s',
     cursor: 'pointer',
   }),
-  main: { flex: 1, padding: 28, overflowY: 'auto' },
+  main: { flex: 1, padding: 28, overflowY: 'auto', minWidth: 0 },
   userBox: { padding: '14px 20px', borderTop: '1px solid #334155' },
   userName: { fontSize: 13, fontWeight: 600, color: '#f8fafc' },
   logoutBtn: {
@@ -49,6 +49,7 @@ const styles = {
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   async function handleLogout() {
@@ -59,8 +60,15 @@ export default function Layout({ children }) {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <aside style={styles.sidebar}>
+    <div className="app-shell">
+      <div className="app-topbar">
+        <button onClick={() => setOpen(true)} aria-label="Abrir menú">☰</button>
+        <span style={{ fontWeight: 700 }}>Dropi Manager</span>
+      </div>
+
+      {open && <div className="app-overlay" onClick={() => setOpen(false)} />}
+
+      <aside className={`app-sidebar${open ? ' open' : ''}`} style={styles.sidebar}>
         <div style={styles.logo}>
           Dropi Manager
           <div style={styles.logoSub}>Panel de Cierres</div>
@@ -71,6 +79,7 @@ export default function Layout({ children }) {
               key={to}
               to={to}
               end={to === '/'}
+              onClick={() => setOpen(false)}
               style={({ isActive }) => styles.navLink(isActive)}
             >
               <span>{icon}</span>
@@ -88,7 +97,7 @@ export default function Layout({ children }) {
           v1.0 · Dropi Manager
         </div>
       </aside>
-      <main style={styles.main}>{children}</main>
+      <main className="app-main" style={styles.main}>{children}</main>
     </div>
   );
 }
