@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell,
+} from 'recharts';
 import api from '../api/client';
 import { COLOR, FONT_HEADING, RADIUS, SHADOW_CARD, btnPrimary } from '../theme';
 
@@ -44,71 +47,74 @@ function fmtCompact(n) {
   return `${sign}$${abs.toFixed(0)}`;
 }
 
+function ChartTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: '#fff', border: `1px solid ${COLOR.border}`, borderRadius: 10,
+                  boxShadow: '0 8px 24px rgba(20,20,43,.12)', padding: '10px 14px', fontSize: 12.5 }}>
+      <div style={{ fontWeight: 700, color: COLOR.inkSoft, marginBottom: 6 }}>{label}</div>
+      {payload.map(p => (
+        <div key={p.dataKey} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, color: COLOR.text }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: p.color, display: 'inline-block' }} />
+            {p.name}
+          </span>
+          <span style={{ fontWeight: 700 }}>{fmt(p.value)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function MonthlyComparisonChart({ byPeriod }) {
   const [expanded, setExpanded] = useState(null);
   if (!byPeriod || byPeriod.length < 2) return null;
-  const series = [
-    { key: 'ganancia', label: 'Ganancia', color: '#22c55e' },
-    { key: 'devolucion', label: 'Devoluciones', color: '#ef4444' },
-    { key: 'ad_spend', label: 'Gasto en pauta', color: '#f59e0b' },
-  ];
-  const maxAbs = Math.max(
-    1,
-    ...byPeriod.flatMap(p => series.map(s => Math.abs(p[s.key] || 0)))
-  );
-  const barAreaHeight = 180;
   const expandedPeriod = byPeriod.find(p => p.period_id === expanded);
+
+  const chartData = byPeriod.map(p => ({
+    label: `${MONTHS[p.month - 1].substring(0, 3)} ${p.year}`,
+    period_id: p.period_id,
+    Ganancia: p.ganancia || 0,
+    Devoluciones: p.devolucion || 0,
+    'Gasto en pauta': p.ad_spend || 0,
+  }));
 
   return (
     <div style={s.table}>
-      <div style={s.tableTitle}>📊 Comparativo mes a mes</div>
-      <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 12 }}>
-        Haz clic en un mes para ver el detalle exacto.
+      <div style={s.tableTitle}>Comparativo mes a mes</div>
+      <div style={{ fontSize: 12, color: COLOR.textMuted, marginBottom: 12 }}>
+        Haz clic en una barra para ver el detalle exacto de ese mes.
       </div>
-      <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
-        {series.map(sr => (
-          <div key={sr.key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64748b' }}>
-            <span style={{ width: 10, height: 10, borderRadius: 3, background: sr.color, display: 'inline-block' }} />
-            {sr.label}
-          </div>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: 22, alignItems: 'flex-end', overflowX: 'auto', paddingBottom: 8 }}>
-        {byPeriod.map(p => {
-          const isExpanded = expanded === p.period_id;
-          return (
-          <div key={p.period_id}
-            onClick={() => setExpanded(isExpanded ? null : p.period_id)}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 100,
-              cursor: 'pointer', padding: '6px 8px', borderRadius: 8,
-              background: isExpanded ? '#f5f3ff' : 'transparent',
-              border: isExpanded ? '1.5px solid #c4b5fd' : '1.5px solid transparent',
+      <div style={{ width: '100%', height: 280 }}>
+        <ResponsiveContainer>
+          <BarChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
+            onClick={(e) => {
+              const pid = e?.activePayload?.[0]?.payload?.period_id;
+              if (pid != null) setExpanded(prev => prev === pid ? null : pid);
             }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: barAreaHeight }}>
-              {series.map(sr => {
-                const val = p[sr.key] || 0;
-                const h = Math.max(2, (Math.abs(val) / maxAbs) * (barAreaHeight - 18));
-                return (
-                  <div key={sr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: barAreaHeight }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 3, whiteSpace: 'nowrap' }}>
-                      {fmtCompact(val)}
-                    </div>
-                    <div title={`${sr.label}: ${fmt(val)}`}
-                      style={{ width: 24, height: h, background: val < 0 ? '#991b1b' : sr.color, borderRadius: '3px 3px 0 0' }} />
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginTop: 8 }}>
-              {MONTHS[p.month - 1].substring(0, 3)} {p.year}
-            </div>
-            <div style={{ fontSize: 11, color: p.ganancia >= 0 ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
-              {fmt(p.ganancia)}
-            </div>
-          </div>
-          );
-        })}
+            <CartesianGrid vertical={false} stroke={COLOR.borderSoft} />
+            <XAxis dataKey="label" tick={{ fontSize: 12, fill: COLOR.textMuted }} axisLine={{ stroke: COLOR.border }} tickLine={false} />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 11, fill: COLOR.textMuted }} axisLine={false} tickLine={false} width={56} />
+            <Tooltip content={<ChartTooltip />} cursor={{ fill: COLOR.borderSoft }} />
+            <Legend wrapperStyle={{ fontSize: 12.5 }} />
+            <Bar dataKey="Ganancia" fill={COLOR.success} radius={[4, 4, 0, 0]} cursor="pointer" maxBarSize={28}>
+              {chartData.map((d, i) => (
+                <Cell key={i} fill={d.Ganancia >= 0 ? COLOR.success : COLOR.danger}
+                      opacity={expanded && d.period_id !== expanded ? 0.45 : 1} />
+              ))}
+            </Bar>
+            <Bar dataKey="Devoluciones" fill={COLOR.danger} radius={[4, 4, 0, 0]} cursor="pointer" maxBarSize={28}>
+              {chartData.map((d, i) => (
+                <Cell key={i} fill={COLOR.danger} opacity={expanded && d.period_id !== expanded ? 0.45 : 1} />
+              ))}
+            </Bar>
+            <Bar dataKey="Gasto en pauta" fill={COLOR.warning} radius={[4, 4, 0, 0]} cursor="pointer" maxBarSize={28}>
+              {chartData.map((d, i) => (
+                <Cell key={i} fill={COLOR.warning} opacity={expanded && d.period_id !== expanded ? 0.45 : 1} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       {expandedPeriod && (

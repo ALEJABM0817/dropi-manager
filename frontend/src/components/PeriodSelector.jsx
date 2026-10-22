@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/client';
+import { COLOR, RADIUS, SHADOW_CARD, btnPrimary } from '../theme';
 
 const MONTHS = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -17,13 +18,12 @@ function previousMonth() {
 
 const s = {
   bar: { display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 24,
-         background: '#fff', padding: '16px 20px', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,.06)' },
+         background: '#fff', padding: '16px 20px', borderRadius: RADIUS.card, boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}` },
   group: { display: 'flex', flexDirection: 'column', gap: 4 },
-  label: { fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  select: { padding: '8px 12px', border: '1.5px solid #e2e8f0', borderRadius: 7, fontSize: 14,
-             background: '#fff', color: '#1e293b', cursor: 'pointer', minWidth: 160 },
-  btn: { padding: '8px 16px', background: '#3b82f6', color: '#fff', border: 'none',
-         borderRadius: 7, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  label: { fontSize: 12, fontWeight: 600, color: COLOR.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' },
+  select: { padding: '8px 12px', border: `1.5px solid ${COLOR.border}`, borderRadius: RADIUS.control, fontSize: 14,
+             background: '#fff', color: COLOR.ink, cursor: 'pointer', minWidth: 160 },
+  btn: btnPrimary,
 };
 
 export default function PeriodSelector({ value, onChange }) {
