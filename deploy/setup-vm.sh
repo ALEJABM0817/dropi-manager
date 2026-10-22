@@ -27,13 +27,19 @@ npm install
 npm run build
 cd ..
 
+# Nginx (running as www-data) needs to be able to traverse into the home dir
+# to reach frontend/dist — the home directory is 700 by default on Debian.
+chmod o+x "$HOME"
+
 echo "== systemd service =="
-sudo cp deploy/dropi-backend.service /etc/systemd/system/dropi-backend.service
+sed "s#__HOME__#$HOME#g; s#__USER__#$(whoami)#g" deploy/dropi-backend.service \
+    | sudo tee /etc/systemd/system/dropi-backend.service > /dev/null
 sudo systemctl daemon-reload
 sudo systemctl enable --now dropi-backend
 
 echo "== Nginx =="
-sudo cp deploy/nginx-dropi-manager.conf /etc/nginx/sites-available/dropi-manager
+sed "s#__HOME__#$HOME#g" deploy/nginx-dropi-manager.conf \
+    | sudo tee /etc/nginx/sites-available/dropi-manager > /dev/null
 sudo ln -sf /etc/nginx/sites-available/dropi-manager /etc/nginx/sites-enabled/dropi-manager
 sudo rm -f /etc/nginx/sites-enabled/default
 echo ">> Edit /etc/nginx/sites-available/dropi-manager and replace YOUR_DOMAIN_OR_IP before continuing."
