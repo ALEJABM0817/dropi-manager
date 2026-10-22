@@ -4,6 +4,7 @@ node_modules/
 # Python
 __pycache__/
 *.pyc
+venv/
 
 # Database — contains real customer data (phone numbers, names, addresses).
 # Never commit this. Deploy it separately (copy the file directly to the server).
