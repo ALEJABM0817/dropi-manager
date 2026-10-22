@@ -21,3 +21,6 @@ frontend/dist/
 .env.*
 .vscode/
 .idea/
+
+# Scratch folders for Artifact mockups etc. — not part of the app
+.mockup_scratch/
