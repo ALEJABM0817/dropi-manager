@@ -318,7 +318,7 @@ export default function GeoPage() {
                 <div style={s.summaryLabel}>% Devolución promedio</div>
               </div>
               <div style={s.summaryCard('#22c55e', '#f0fdf4')}>
-                <div style={s.summaryVal('#22c55e')} style={{ fontSize: 18, fontWeight: 800, color: '#22c55e' }}>
+                <div style={{ ...s.summaryVal('#22c55e'), fontSize: 18 }}>
                   {fmt(totals.ganancia)}
                 </div>
                 <div style={s.summaryLabel}>Ganancia total entregado</div>
