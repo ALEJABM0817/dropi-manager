@@ -4,12 +4,12 @@ import api from '../api/client';
 
 const s = {
   wrap: {
-    minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: '#1e293b',
+    width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: '#1e293b', padding: 16, boxSizing: 'border-box',
   },
   card: {
-    background: '#fff', borderRadius: 14, padding: '36px 36px', width: 360,
-    boxShadow: '0 20px 60px rgba(0,0,0,.35)',
+    background: '#fff', borderRadius: 14, padding: '36px 36px', width: '100%', maxWidth: 360,
+    boxShadow: '0 20px 60px rgba(0,0,0,.35)', boxSizing: 'border-box',
   },
   logo: { fontSize: 20, fontWeight: 800, color: '#1e293b', marginBottom: 2 },
   sub: { fontSize: 13, color: '#64748b', marginBottom: 24 },
