@@ -32,8 +32,20 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "dropi.db")
 META_AUDIENCES_DIR = os.path.join(os.path.dirname(__file__), "meta_audiences_salidas")
 os.makedirs(META_AUDIENCES_DIR, exist_ok=True)
 
-app = FastAPI(title="Dropi Manager API")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# Interactive API docs leak the full endpoint map to anyone — off entirely, same
+# way in dev and production (nobody here uses them; curl/the frontend don't need them).
+app = FastAPI(title="Dropi Manager API", docs_url=None, redoc_url=None, openapi_url=None)
+
+# Only the real frontend origins may call this API. ALLOWED_ORIGINS env var lets the
+# deployed instance add its domain without touching code (comma-separated).
+_default_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+_extra_origins = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_default_origins + _extra_origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ── DB ──────────────────────────────────────────────────────────────────────
 
@@ -265,6 +277,23 @@ with get_db() as conn:
 
 PUBLIC_PATHS = {"/api/auth/login", "/api/health", "/openapi.json", "/docs", "/redoc"}
 
+# Login brute-force guard: per-IP failed-attempt counter, in memory (fine for a
+# single-worker process — resets on restart, which is an acceptable tradeoff for
+# this app's scale). 5 failures -> locked out for 15 minutes.
+LOGIN_MAX_ATTEMPTS = 5
+LOGIN_LOCKOUT_SECONDS = 15 * 60
+_login_attempts: dict = {}  # ip -> (fail_count, locked_until_timestamp_or_None)
+
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB — comfortably above any real Dropi/ads export
+
+def check_upload_size(content: bytes):
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, f"El archivo supera el límite de {MAX_UPLOAD_BYTES // (1024*1024)} MB")
+
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for", "")
+    return fwd.split(",")[0].strip() if fwd else (request.client.host if request.client else "unknown")
+
 @app.middleware("http")
 async def require_auth(request: Request, call_next):
     path = request.url.path
@@ -287,11 +316,24 @@ class LoginIn(BaseModel):
     password: str
 
 @app.post("/api/auth/login")
-def login(body: LoginIn):
+def login(body: LoginIn, request: Request):
+    ip = _client_ip(request)
+    fail_count, locked_until = _login_attempts.get(ip, (0, None))
+    now = datetime.now().timestamp()
+    if locked_until and now < locked_until:
+        wait_min = max(1, int((locked_until - now) / 60) + 1)
+        raise HTTPException(429, f"Demasiados intentos fallidos. Espera {wait_min} minuto(s) e intenta de nuevo.")
+
     with get_db() as conn:
         user = conn.execute("SELECT * FROM users WHERE email=?", (body.email.strip().lower(),)).fetchone()
         if not user or not verify_password(body.password, user["password_hash"]):
+            fail_count += 1
+            if fail_count >= LOGIN_MAX_ATTEMPTS:
+                _login_attempts[ip] = (0, now + LOGIN_LOCKOUT_SECONDS)
+            else:
+                _login_attempts[ip] = (fail_count, None)
             raise HTTPException(401, "Correo o contraseña incorrectos")
+        _login_attempts.pop(ip, None)
         token = secrets.token_urlsafe(32)
         expires_at = (datetime.now() + timedelta(days=SESSION_DAYS)).isoformat()
         conn.execute("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)",
@@ -659,6 +701,7 @@ async def upload_orders(
     confirm: bool = Form(False),
 ):
     content = await file.read()
+    check_upload_size(content)
     wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
     ws = wb.active
 
@@ -1734,6 +1777,7 @@ async def upload_product_orders(
     confirm: bool = Form(False),
 ):
     content = await file.read()
+    check_upload_size(content)
     wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
     ws = wb.active
 
@@ -2194,6 +2238,7 @@ async def upload_ad_spend(
     breakdown column (Meta/TikTok let you add multiple breakdowns to one report),
     this populates campaign-level AND department-level ad spend from the same file."""
     content = await file.read()
+    check_upload_size(content)
     text = content.decode('utf-8-sig', errors='ignore')
     sample = text[:2048]
     delimiter = ';' if sample.count(';') > sample.count(',') else ','
@@ -2324,6 +2369,7 @@ async def upload_ad_region_spend(
     account_label: str = Form(""),
 ):
     content = await file.read()
+    check_upload_size(content)
     regions = parse_region_csv(content)
     if not regions:
         raise HTTPException(400, "El CSV no contiene regiones válidas")
@@ -2586,6 +2632,7 @@ async def upload_ad_campaigns(
     account_label: str = Form(""),
 ):
     content = await file.read()
+    check_upload_size(content)
     campaigns = parse_campaign_csv(content)
     if not campaigns:
         raise HTTPException(400, "El CSV no contiene campañas válidas")
