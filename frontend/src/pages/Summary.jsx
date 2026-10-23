@@ -192,6 +192,103 @@ function PctBadge({ value, size }) {
   return <span style={{ padding: '2px 8px', borderRadius: 10, fontSize: size || 12, fontWeight: 700, background: bg, color }}>{value}%</span>;
 }
 
+// ── Proyección de utilidad ──────────────────────────────────────────────────
+// "Bruto" = TOTAL proyectado (misma fórmula que el TOTAL de arriba), "Neto" = TOTAL sin el
+// 10% de reserva. Solo los pedidos hoy "en proceso" pueden convertirse en entregas futuras
+// (una devolución ya confirmada no puede volverse entrega) — por eso el % máximo alcanzable
+// casi nunca es 100%: está limitado por cuántos pedidos siguen sin desenlace final.
+// Flete y publicidad ya están gastados (son fijos); lo único que varía por pedido extra
+// entregado es su ganancia promedio (ingreso − costo de producto, que es justo lo que ya
+// representa el campo "ganancia" de Dropi por pedido).
+function buildProjectionSteps({ totalOrders, entregadoCount, enProcesoCount, avgGanancia, baseTotal }) {
+  if (!totalOrders || entregadoCount == null) return null;
+  const currentPct = (entregadoCount / totalOrders) * 100;
+  const maxDeliverable = entregadoCount + (enProcesoCount || 0);
+  const maxPct = Math.min(100, (maxDeliverable / totalOrders) * 100);
+  const steps = [];
+  let p = Math.floor(currentPct / 5) * 5 + 5;
+  while (p < maxPct - 0.5) { steps.push(Math.round(p)); p += 5; }
+  const lastWhole = Math.floor(maxPct);
+  if (lastWhole > currentPct + 0.5 && (steps.length === 0 || lastWhole > steps[steps.length - 1])) {
+    steps.push(lastWhole);
+  }
+  const rows = steps.map(pct => {
+    const targetCount = Math.min(maxDeliverable, Math.round((pct / 100) * totalOrders));
+    const extraOrders = Math.max(0, targetCount - entregadoCount);
+    const bruto = baseTotal + extraOrders * (avgGanancia || 0);
+    return { pct, extraOrders, bruto, neto: bruto * 0.9 };
+  });
+  return { currentPct, maxPct, maxDeliverable, baseTotal, baseNeto: baseTotal * 0.9, rows };
+}
+
+function lerpColor(a, b, t) {
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+  const ar = (pa >> 16) & 255, ag = (pa >> 8) & 255, ab = pa & 255;
+  const br = (pb >> 16) & 255, bg = (pb >> 8) & 255, bb = pb & 255;
+  const t2 = Math.max(0, Math.min(1, t));
+  return `rgb(${Math.round(ar + (br - ar) * t2)},${Math.round(ag + (bg - ag) * t2)},${Math.round(ab + (bb - ab) * t2)})`;
+}
+
+function ProjectionCard({ title, subtitle, data }) {
+  if (!data) return null;
+  const { currentPct, maxPct, baseTotal, baseNeto, rows, maxDeliverable } = data;
+  return (
+    <div style={{ background: '#fff', borderRadius: RADIUS.card, padding: '20px 24px', boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+        <span style={{ fontFamily: FONT_HEADING, fontSize: 14.5, fontWeight: 700, color: COLOR.inkSoft }}>{title}</span>
+      </div>
+      <div style={{ fontSize: 12, color: COLOR.textMuted, marginBottom: 16 }}>
+        {subtitle || `Tasa actual ${currentPct.toFixed(0)}% de entrega. Solo varía ingreso y costo de producto — flete y publicidad ya están fijos.`}
+      </div>
+
+      {/* HOY */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', background: '#F8F9FC', borderRadius: 10, marginBottom: rows.length ? 10 : 0 }}>
+        <div style={{ width: 70, fontSize: 12, fontWeight: 700, color: COLOR.textMuted, flexShrink: 0 }}>HOY · {currentPct.toFixed(0)}%</div>
+        <div style={{ flex: 1, height: 8, borderRadius: 4, background: COLOR.border, overflow: 'hidden' }}>
+          <div style={{ width: `${currentPct}%`, height: '100%', background: '#94A3B8', borderRadius: 4 }} />
+        </div>
+        <div style={{ textAlign: 'right', minWidth: 120 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: COLOR.ink }}>{fmt(baseTotal)}</div>
+          <div style={{ fontSize: 10.5, color: COLOR.textMuted }}>Bruto</div>
+        </div>
+      </div>
+
+      {rows.length === 0 ? (
+        <div style={{ fontSize: 12.5, color: COLOR.textMuted, padding: '8px 2px' }}>
+          Ya no quedan pedidos "en proceso" por convertir este mes — el {maxPct.toFixed(0)}% es el máximo alcanzable.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {rows.map((r, i) => {
+            const t = (r.pct - currentPct) / Math.max(1, 100 - currentPct);
+            const barColor = lerpColor('#A3E635', '#16A34A', t);
+            return (
+              <div key={r.pct} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', borderRadius: 10,
+                                        background: i === rows.length - 1 ? '#F0FDF4' : 'transparent', border: `1px solid ${i === rows.length - 1 ? '#BBF7D0' : 'transparent'}` }}>
+                <div style={{ width: 70, flexShrink: 0 }}>
+                  <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                                 border: `1.5px solid ${barColor}`, color: barColor }}>
+                    {r.pct}%
+                  </span>
+                </div>
+                <div style={{ flex: 1, height: 8, borderRadius: 4, background: COLOR.border, overflow: 'hidden' }}>
+                  <div style={{ width: `${r.pct}%`, height: '100%', background: barColor, borderRadius: 4 }} />
+                </div>
+                <div style={{ textAlign: 'right', minWidth: 150 }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: barColor }}>{fmt(r.bruto)}</div>
+                  <div style={{ fontSize: 10.5, color: COLOR.textMuted }}>Bruto</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: barColor, marginTop: 2 }}>{fmt(r.neto)}</div>
+                  <div style={{ fontSize: 10.5, color: COLOR.textMuted }}>Neto · +{r.extraOrders} pedidos</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 const s = {
   title: { fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 700, color: COLOR.ink, letterSpacing: '-0.4px', marginBottom: 4 },
@@ -359,13 +456,18 @@ export default function Summary() {
   // when the checkbox is on, and any ad spend/ingreso/devolución that isn't attributable to a
   // specific product — is allocated by each line's share of despachados (dispatched orders)
   // this period. This keeps Hombre + Dama always adding up exactly to the main TOTAL above.
-  const lineaStats = { HOMBRE: { total: 0, ingreso: 0, costoDev: 0, adSpend: 0 }, DAMA: { total: 0, ingreso: 0, costoDev: 0, adSpend: 0 } };
+  const lineaStats = {
+    HOMBRE: { total: 0, ingreso: 0, costoDev: 0, adSpend: 0, entregados: 0, enProceso: 0 },
+    DAMA: { total: 0, ingreso: 0, costoDev: 0, adSpend: 0, entregados: 0, enProceso: 0 },
+  };
   for (const p of productLines) {
     const bucket = p.linea === 'DAMA' ? lineaStats.DAMA : lineaStats.HOMBRE;
     bucket.total += p.total || 0;
     bucket.ingreso += p.ingreso_estimado || 0;
     bucket.costoDev += p.costo_devolucion_estimado || 0;
     bucket.adSpend += p.ad_spend || 0;
+    bucket.entregados += p.entregados || 0;
+    bucket.enProceso += p.en_proceso || 0;
   }
   const totalDespachados = lineaStats.HOMBRE.total + lineaStats.DAMA.total;
   const showLineas = isZindra && lineaStats.DAMA.total > 0;
@@ -396,6 +498,40 @@ export default function Summary() {
     const resultadoSinDian = resultado - valorDian;
     return { total: b.total, share, ingresoProducto, ingreso, costoDev, adSpend, otrosAsignados, otrosIngresos, resultado, valorDian, resultadoSinDian };
   }
+
+  // ── Proyección de utilidad ──────────────────────────────────────────────────
+  // Siempre usa devoluciones confirmadas (nunca el estimado de "en proceso", sin importar
+  // el checkbox de arriba) como línea base — los pedidos en proceso son justo el grupo que
+  // se está proyectando que se conviertan en entrega, así que no pueden contar dos veces.
+  const totalForProjection = entregado + totalIncome - devolucion - totalPublicidad - totalGastos;
+  const avgGananciaEntregado = entregadoCount > 0 ? entregado / entregadoCount : 0;
+  const storeProjection = buildProjectionSteps({
+    totalOrders, entregadoCount, enProcesoCount, avgGanancia: avgGananciaEntregado, baseTotal: totalForProjection,
+  });
+
+  const costoDevSinAsignarBase = Math.max(0, devolucion - sumCostoDevProductos);
+  function lineaBaseTotal(key) {
+    const b = lineaStats[key];
+    const share = totalDespachados > 0 ? b.total / totalDespachados : 0;
+    const otrosIngresos = key === 'HOMBRE' ? totalIncome : 0;
+    const ingreso = b.ingreso + ingresoSinAsignarProducto * share + otrosIngresos;
+    const costoDev = b.costoDev + costoDevSinAsignarBase * share;
+    const adSpend = b.adSpend + adSpendSinAsignar * share;
+    const otrosAsignados = totalGastos * share;
+    return ingreso - costoDev - adSpend - otrosAsignados;
+  }
+  const hombreProjection = showLineas ? buildProjectionSteps({
+    totalOrders: lineaStats.HOMBRE.total, entregadoCount: lineaStats.HOMBRE.entregados,
+    enProcesoCount: lineaStats.HOMBRE.enProceso,
+    avgGanancia: lineaStats.HOMBRE.entregados > 0 ? lineaStats.HOMBRE.ingreso / lineaStats.HOMBRE.entregados : 0,
+    baseTotal: lineaBaseTotal('HOMBRE'),
+  }) : null;
+  const damaProjection = showLineas ? buildProjectionSteps({
+    totalOrders: lineaStats.DAMA.total, entregadoCount: lineaStats.DAMA.entregados,
+    enProcesoCount: lineaStats.DAMA.enProceso,
+    avgGanancia: lineaStats.DAMA.entregados > 0 ? lineaStats.DAMA.ingreso / lineaStats.DAMA.entregados : 0,
+    baseTotal: lineaBaseTotal('DAMA'),
+  }) : null;
 
   // Manual counts
   const manualEntregados = manualCounts.filter(m => m.type === 'entregado');
@@ -973,6 +1109,16 @@ export default function Summary() {
               <span>{fmt(totalSinDian)}</span>
             </div>
           </div>
+
+          {/* ═══ PROYECCIÓN DE UTILIDAD ═══ */}
+          {showLineas ? (
+            <>
+              <ProjectionCard title={`Proyección de utilidad — Zindra Hombre`} data={hombreProjection} />
+              <ProjectionCard title={`Proyección de utilidad — Zindra Dama`} data={damaProjection} />
+            </>
+          ) : (
+            <ProjectionCard title="Proyección de utilidad" data={storeProjection} />
+          )}
 
           {showLineas && (
             <div style={s.table}>
