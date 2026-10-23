@@ -194,16 +194,19 @@ function PctBadge({ value, size }) {
 
 // ── Proyección de utilidad ──────────────────────────────────────────────────
 // "Bruto" = TOTAL proyectado (misma fórmula que el TOTAL de arriba), "Neto" = TOTAL sin el
-// 10% de reserva. Solo los pedidos hoy "en proceso" pueden convertirse en entregas futuras
-// (una devolución ya confirmada no puede volverse entrega) — por eso el % máximo alcanzable
-// casi nunca es 100%: está limitado por cuántos pedidos siguen sin desenlace final.
-// Flete y publicidad ya están gastados (son fijos); lo único que varía por pedido extra
-// entregado es su ganancia promedio (ingreso − costo de producto, que es justo lo que ya
-// representa el campo "ganancia" de Dropi por pedido).
-function buildProjectionSteps({ totalOrders, entregadoCount, enProcesoCount, avgGanancia, baseTotal }) {
+// 10% de reserva. Solo los pedidos que AÚN NO tienen desenlace final pueden convertirse en
+// entregas futuras — eso es más que el "en_proceso" angosto que usa el resto de la app
+// (RECLAME EN OFICINA, EN BODEGA...): aquí cuenta cualquier estado que no sea ENTREGADO ni
+// una devolución ya confirmada (novedad, novedad solucionada, despachada, tránsito urbano,
+// asignado, etc. — todo lo que todavía puede llegar a entregarse). Por eso `pendienteCount`
+// se calcula afuera como total − entregados − devoluciones, no como el en_proceso del resto
+// de la app. Flete y publicidad ya están gastados (son fijos); lo único que varía por pedido
+// extra entregado es su ganancia promedio (ingreso − costo de producto, que es justo lo que
+// ya representa el campo "ganancia" de Dropi por pedido).
+function buildProjectionSteps({ totalOrders, entregadoCount, pendienteCount, avgGanancia, baseTotal }) {
   if (!totalOrders || entregadoCount == null) return null;
   const currentPct = (entregadoCount / totalOrders) * 100;
-  const maxDeliverable = entregadoCount + (enProcesoCount || 0);
+  const maxDeliverable = entregadoCount + (pendienteCount || 0);
   const maxPct = Math.min(100, (maxDeliverable / totalOrders) * 100);
   const steps = [];
   let p = Math.floor(currentPct / 5) * 5 + 5;
@@ -218,7 +221,7 @@ function buildProjectionSteps({ totalOrders, entregadoCount, enProcesoCount, avg
     const bruto = baseTotal + extraOrders * (avgGanancia || 0);
     return { pct, extraOrders, bruto, neto: bruto * 0.9 };
   });
-  return { currentPct, maxPct, maxDeliverable, baseTotal, baseNeto: baseTotal * 0.9, rows };
+  return { currentPct, maxPct, maxDeliverable, pendienteCount: pendienteCount || 0, baseTotal, baseNeto: baseTotal * 0.9, rows };
 }
 
 function lerpColor(a, b, t) {
@@ -231,7 +234,7 @@ function lerpColor(a, b, t) {
 
 function ProjectionCard({ title, subtitle, data }) {
   if (!data) return null;
-  const { currentPct, maxPct, baseTotal, baseNeto, rows, maxDeliverable } = data;
+  const { currentPct, maxPct, baseTotal, baseNeto, rows, maxDeliverable, pendienteCount } = data;
   return (
     <div style={{ background: '#fff', borderRadius: RADIUS.card, padding: '20px 24px', boxShadow: SHADOW_CARD, border: `1px solid ${COLOR.border}`, marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
@@ -255,7 +258,9 @@ function ProjectionCard({ title, subtitle, data }) {
 
       {rows.length === 0 ? (
         <div style={{ fontSize: 12.5, color: COLOR.textMuted, padding: '8px 2px' }}>
-          Ya no quedan pedidos "en proceso" por convertir este mes — el {maxPct.toFixed(0)}% es el máximo alcanzable.
+          {pendienteCount > 0
+            ? `Quedan ${pendienteCount} pedido${pendienteCount === 1 ? '' : 's'} pendiente${pendienteCount === 1 ? '' : 's'} (sin desenlace final todavía), pero no alcanzan para subir ni un 5% más — el ${maxPct.toFixed(1)}% es el máximo posible este mes, muy cerca del ${currentPct.toFixed(1)}% actual.`
+            : `No quedan pedidos pendientes este mes — el ${currentPct.toFixed(0)}% actual ya es el resultado final.`}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -457,8 +462,8 @@ export default function Summary() {
   // specific product — is allocated by each line's share of despachados (dispatched orders)
   // this period. This keeps Hombre + Dama always adding up exactly to the main TOTAL above.
   const lineaStats = {
-    HOMBRE: { total: 0, ingreso: 0, costoDev: 0, adSpend: 0, entregados: 0, enProceso: 0 },
-    DAMA: { total: 0, ingreso: 0, costoDev: 0, adSpend: 0, entregados: 0, enProceso: 0 },
+    HOMBRE: { total: 0, ingreso: 0, costoDev: 0, adSpend: 0, entregados: 0, devoluciones: 0 },
+    DAMA: { total: 0, ingreso: 0, costoDev: 0, adSpend: 0, entregados: 0, devoluciones: 0 },
   };
   for (const p of productLines) {
     const bucket = p.linea === 'DAMA' ? lineaStats.DAMA : lineaStats.HOMBRE;
@@ -467,7 +472,7 @@ export default function Summary() {
     bucket.costoDev += p.costo_devolucion_estimado || 0;
     bucket.adSpend += p.ad_spend || 0;
     bucket.entregados += p.entregados || 0;
-    bucket.enProceso += p.en_proceso || 0;
+    bucket.devoluciones += p.devoluciones || 0;
   }
   const totalDespachados = lineaStats.HOMBRE.total + lineaStats.DAMA.total;
   const showLineas = isZindra && lineaStats.DAMA.total > 0;
@@ -501,12 +506,16 @@ export default function Summary() {
 
   // ── Proyección de utilidad ──────────────────────────────────────────────────
   // Siempre usa devoluciones confirmadas (nunca el estimado de "en proceso", sin importar
-  // el checkbox de arriba) como línea base — los pedidos en proceso son justo el grupo que
+  // el checkbox de arriba) como línea base — los pedidos pendientes son justo el grupo que
   // se está proyectando que se conviertan en entrega, así que no pueden contar dos veces.
+  // "Pendiente" = todo lo que no es ENTREGADO ni DEVOLUCION confirmada (novedad, novedad
+  // solucionada, despachada, tránsito, asignado, reclame en oficina, etc.) — más amplio que
+  // el "en_proceso" angosto que usa el resto de la app (que solo mira el camino a devolución).
   const totalForProjection = entregado + totalIncome - devolucion - totalPublicidad - totalGastos;
   const avgGananciaEntregado = entregadoCount > 0 ? entregado / entregadoCount : 0;
+  const pendienteCount = Math.max(0, totalOrders - entregadoCount - devolucionCount);
   const storeProjection = buildProjectionSteps({
-    totalOrders, entregadoCount, enProcesoCount, avgGanancia: avgGananciaEntregado, baseTotal: totalForProjection,
+    totalOrders, entregadoCount, pendienteCount, avgGanancia: avgGananciaEntregado, baseTotal: totalForProjection,
   });
 
   const costoDevSinAsignarBase = Math.max(0, devolucion - sumCostoDevProductos);
@@ -522,13 +531,13 @@ export default function Summary() {
   }
   const hombreProjection = showLineas ? buildProjectionSteps({
     totalOrders: lineaStats.HOMBRE.total, entregadoCount: lineaStats.HOMBRE.entregados,
-    enProcesoCount: lineaStats.HOMBRE.enProceso,
+    pendienteCount: Math.max(0, lineaStats.HOMBRE.total - lineaStats.HOMBRE.entregados - lineaStats.HOMBRE.devoluciones),
     avgGanancia: lineaStats.HOMBRE.entregados > 0 ? lineaStats.HOMBRE.ingreso / lineaStats.HOMBRE.entregados : 0,
     baseTotal: lineaBaseTotal('HOMBRE'),
   }) : null;
   const damaProjection = showLineas ? buildProjectionSteps({
     totalOrders: lineaStats.DAMA.total, entregadoCount: lineaStats.DAMA.entregados,
-    enProcesoCount: lineaStats.DAMA.enProceso,
+    pendienteCount: Math.max(0, lineaStats.DAMA.total - lineaStats.DAMA.entregados - lineaStats.DAMA.devoluciones),
     avgGanancia: lineaStats.DAMA.entregados > 0 ? lineaStats.DAMA.ingreso / lineaStats.DAMA.entregados : 0,
     baseTotal: lineaBaseTotal('DAMA'),
   }) : null;
