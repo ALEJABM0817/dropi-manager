@@ -332,6 +332,7 @@ export default function Summary() {
   const [expandedCarrier, setExpandedCarrier] = useState(null);
   const [campaignSpend, setCampaignSpend] = useState(0);
   const [productLines, setProductLines] = useState([]);
+  const [productsModalLinea, setProductsModalLinea] = useState(null); // 'HOMBRE' | 'DAMA' | null
 
   const load = useCallback(async (p) => {
     if (!p?.period_id) return;
@@ -1146,8 +1147,15 @@ export default function Summary() {
                   const color = r.resultado >= 0 ? '#2563eb' : '#dc2626';
                   return (
                     <div key={key} style={{ background: key === 'DAMA' ? '#fdf2f8' : '#eff6ff', borderRadius: 10, padding: '14px 18px' }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginBottom: 10 }}>
-                        {icon} Zindra {key === 'DAMA' ? 'Dama' : 'Hombre'}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
+                          {icon} Zindra {key === 'DAMA' ? 'Dama' : 'Hombre'}
+                        </div>
+                        <button onClick={() => setProductsModalLinea(key)}
+                          style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 7,
+                                   padding: '3px 10px', fontSize: 11.5, fontWeight: 600, color: COLOR.accent, cursor: 'pointer' }}>
+                          Ver productos
+                        </button>
                       </div>
                       <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>
                         {r.total} despachados ({(r.share * 100).toFixed(1)}%)
@@ -1187,6 +1195,66 @@ export default function Summary() {
               </div>
             </div>
           )}
+
+          {/* PRODUCTOS POR LÍNEA (HOMBRE/DAMA) MODAL */}
+          {productsModalLinea && (() => {
+            const items = productLines
+              .filter(p => (p.linea === 'DAMA' ? 'DAMA' : 'HOMBRE') === productsModalLinea)
+              .slice()
+              .sort((a, b) => (b.total || 0) - (a.total || 0));
+            const icon = productsModalLinea === 'DAMA' ? '👗' : '👔';
+            return (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', display: 'flex',
+                            justifyContent: 'center', alignItems: 'flex-start', paddingTop: 50, zIndex: 1000 }}
+                onClick={() => setProductsModalLinea(null)}>
+                <div style={{ background: '#fff', borderRadius: RADIUS.card, padding: '24px 28px', maxWidth: 820, width: '95%',
+                              maxHeight: '80vh', overflow: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,.15)' }}
+                  onClick={e => e.stopPropagation()}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <div>
+                      <div style={{ fontFamily: FONT_HEADING, fontSize: 18, fontWeight: 700, color: COLOR.ink }}>
+                        {icon} Productos — Zindra {productsModalLinea === 'DAMA' ? 'Dama' : 'Hombre'}
+                      </div>
+                      <div style={{ fontSize: 13, color: COLOR.textMuted }}>{items.length} productos asignados a esta línea</div>
+                    </div>
+                    <button onClick={() => setProductsModalLinea(null)}
+                      style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#94a3b8' }}>✕</button>
+                  </div>
+                  {items.length === 0 ? (
+                    <div style={s.noData}>No hay productos asignados a esta línea todavía.</div>
+                  ) : (
+                    <div className="table-scroll">
+                      <table style={{ width: '100%', minWidth: 560, borderCollapse: 'collapse', fontSize: 13 }}>
+                        <thead>
+                          <tr style={{ background: '#FAFAFD' }}>
+                            {['Producto', 'Despachados', 'Entregados', 'Devoluciones', 'Resultado neto'].map((h, i) => (
+                              <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'right',
+                                color: COLOR.textFaint, fontWeight: 700, fontSize: 11, textTransform: 'uppercase',
+                                borderBottom: `1px solid ${COLOR.border}` }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {items.map((p, i) => (
+                            <tr key={p.grupo || i} style={{ background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                              <td style={{ padding: '7px 12px', fontWeight: 600, color: COLOR.inkSoft }}>{p.producto}</td>
+                              <td style={{ padding: '7px 12px', textAlign: 'right' }}>{p.total}</td>
+                              <td style={{ padding: '7px 12px', textAlign: 'right', color: COLOR.success, fontWeight: 600 }}>{p.entregados}</td>
+                              <td style={{ padding: '7px 12px', textAlign: 'right', color: COLOR.danger, fontWeight: 600 }}>{p.devoluciones}</td>
+                              <td style={{ padding: '7px 12px', textAlign: 'right', fontWeight: 700,
+                                color: (p.resultado_neto || 0) >= 0 ? COLOR.success : COLOR.danger }}>
+                                {fmt(p.resultado_neto)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           <div style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center' }}>
             Los valores se guardan automáticamente al salir del campo (Enter o clic fuera)
