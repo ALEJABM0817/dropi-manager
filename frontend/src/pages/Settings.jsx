@@ -210,16 +210,92 @@ function IncomeCategoryList() {
   );
 }
 
+function DianRateList() {
+  const [rates, setRates] = useState([]);
+  const [name, setName] = useState('');
+  const [pct, setPct] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [editPct, setEditPct] = useState('');
+
+  const load = () => api.get('/dian-rates').then(r => setRates(r.data));
+  useEffect(() => { load(); }, []);
+
+  async function add() {
+    const value = parseFloat(pct);
+    if (!name.trim() || isNaN(value)) return;
+    await api.post('/dian-rates', { name: name.trim(), percentage: value });
+    setName(''); setPct(''); load();
+  }
+
+  async function saveEdit(id) {
+    const value = parseFloat(editPct);
+    if (isNaN(value)) return;
+    await api.patch(`/dian-rates/${id}`, { percentage: value });
+    setEditId(null); load();
+  }
+
+  return (
+    <Section title="🧾 Tarifas DIAN">
+      <div style={s.addRow}>
+        <input style={s.input} value={name} onChange={e => setName(e.target.value)}
+          placeholder="Ej: Estándar" onKeyDown={e => e.key === 'Enter' && add()} />
+        <input style={{ ...s.input, flex: 0.5 }} value={pct} onChange={e => setPct(e.target.value)}
+          placeholder="%" inputMode="decimal" onKeyDown={e => e.key === 'Enter' && add()} />
+        <button style={s.addBtn} onClick={add}>+</button>
+      </div>
+      <ul style={s.list}>
+        {rates.length === 0 && <li style={s.empty}>Sin tarifas aún</li>}
+        {rates.map(r => (
+          <li key={r.id} style={s.listItem}>
+            <span style={s.itemName}>
+              {r.name}{' '}
+              {editId === r.id ? (
+                <input
+                  autoFocus
+                  style={{ width: 54, padding: '3px 6px', border: '1.5px solid #3b82f6', borderRadius: 6, fontSize: 13 }}
+                  value={editPct}
+                  onChange={e => setEditPct(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveEdit(r.id); if (e.key === 'Escape') setEditId(null); }}
+                />
+              ) : (
+                <span
+                  onClick={() => { setEditId(r.id); setEditPct(String(r.percentage)); }}
+                  style={{ cursor: 'pointer', color: COLOR.textMuted }}
+                  title="Click para editar el %"
+                >({r.percentage}%)</span>
+              )}
+              {r.is_default ? (
+                <span style={s.badge('#22c55e')}>por defecto</span>
+              ) : null}
+            </span>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {!r.is_default && (
+                <button
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 15, padding: '0 4px' }}
+                  title="Marcar como predeterminada"
+                  onClick={async () => { await api.post(`/dian-rates/${r.id}/default`); load(); }}
+                >⭐</button>
+              )}
+              <button style={s.delBtn} onClick={async () => { await api.delete(`/dian-rates/${r.id}`); load(); }}>✕</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
 export default function Settings() {
   return (
     <div>
       <div style={s.title}>Configuración</div>
-      <div style={s.sub}>Gestiona tus tiendas, cuentas publicitarias y categorías de gastos e ingresos</div>
+      <div style={s.sub}>Gestiona tus tiendas, cuentas publicitarias, categorías de gastos e ingresos y tarifas DIAN</div>
       <div style={s.grid}>
         <StoreList />
         <AdAccountList />
         <ExpenseCategoryList />
         <IncomeCategoryList />
+        <DianRateList />
       </div>
     </div>
   );

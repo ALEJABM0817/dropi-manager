@@ -245,9 +245,25 @@ def init_db():
             fecha TEXT, nombre_cliente TEXT, telefono TEXT, estatus TEXT, novedad TEXT,
             departamento_destino TEXT, ciudad_destino TEXT, direccion TEXT
         );
+        CREATE TABLE IF NOT EXISTS dian_rates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            percentage REAL NOT NULL,
+            is_default INTEGER DEFAULT 0,
+            sort_order INTEGER DEFAULT 0
+        );
         """)
 
 init_db()
+
+# Seed the historical hardcoded 3.5% as the first, default rate (first boot only) —
+# keeps every existing Resumen/Acumulado calculation unchanged until the user adds more.
+with get_db() as conn:
+    if conn.execute("SELECT COUNT(*) FROM dian_rates").fetchone()[0] == 0:
+        conn.execute(
+            "INSERT INTO dian_rates (name, percentage, is_default, sort_order) VALUES (?,?,1,0)",
+            ("Estándar", 3.5),
+        )
 
 # ── Auth (single/few-user login — hashed password, bearer session token) ───
 
@@ -1627,6 +1643,61 @@ def delete_income_entry(category_id: int, period_id: int, store_id: int):
     with get_db() as conn:
         conn.execute("DELETE FROM income_entries WHERE category_id=? AND period_id=? AND store_id=?",
                      (category_id, period_id, store_id))
+    return {"ok": True}
+
+# ── DIAN RATES ────────────────────────────────────────────────────────────────
+# Configurable % used by Resumen/Acumulado for the "Valor DIAN" scenario. Used to be a
+# hardcoded 3.5% in the frontend — now a list so the user can keep several (e.g. 3.5%
+# and 2%) and switch between them per view, with one marked as the default.
+
+@app.get("/api/dian-rates")
+def list_dian_rates():
+    with get_db() as conn:
+        return rows_to_list(conn.execute("SELECT * FROM dian_rates ORDER BY sort_order, id").fetchall())
+
+class DianRateIn(BaseModel):
+    name: str
+    percentage: float
+
+@app.post("/api/dian-rates")
+def create_dian_rate(body: DianRateIn):
+    with get_db() as conn:
+        max_order = conn.execute("SELECT COALESCE(MAX(sort_order),0) as m FROM dian_rates").fetchone()["m"]
+        is_default = 1 if conn.execute("SELECT COUNT(*) FROM dian_rates").fetchone()[0] == 0 else 0
+        cur = conn.execute("INSERT INTO dian_rates (name, percentage, is_default, sort_order) VALUES (?,?,?,?)",
+                           (body.name.strip(), body.percentage, is_default, max_order + 1))
+        return {"id": cur.lastrowid, "name": body.name.strip(), "percentage": body.percentage,
+                "is_default": is_default, "sort_order": max_order + 1}
+
+class DianRateUpdate(BaseModel):
+    name: Optional[str] = None
+    percentage: Optional[float] = None
+
+@app.patch("/api/dian-rates/{rate_id}")
+def update_dian_rate(rate_id: int, body: DianRateUpdate):
+    with get_db() as conn:
+        if body.name is not None:
+            conn.execute("UPDATE dian_rates SET name=? WHERE id=?", (body.name.strip(), rate_id))
+        if body.percentage is not None:
+            conn.execute("UPDATE dian_rates SET percentage=? WHERE id=?", (body.percentage, rate_id))
+    return {"ok": True}
+
+@app.post("/api/dian-rates/{rate_id}/default")
+def set_default_dian_rate(rate_id: int):
+    with get_db() as conn:
+        conn.execute("UPDATE dian_rates SET is_default=0")
+        conn.execute("UPDATE dian_rates SET is_default=1 WHERE id=?", (rate_id,))
+    return {"ok": True}
+
+@app.delete("/api/dian-rates/{rate_id}")
+def delete_dian_rate(rate_id: int):
+    with get_db() as conn:
+        was_default = conn.execute("SELECT is_default FROM dian_rates WHERE id=?", (rate_id,)).fetchone()
+        conn.execute("DELETE FROM dian_rates WHERE id=?", (rate_id,))
+        if was_default and was_default["is_default"]:
+            next_row = conn.execute("SELECT id FROM dian_rates ORDER BY sort_order, id LIMIT 1").fetchone()
+            if next_row:
+                conn.execute("UPDATE dian_rates SET is_default=1 WHERE id=?", (next_row["id"],))
     return {"ok": True}
 
 @app.get("/api/income")

@@ -163,11 +163,18 @@ export default function AccumulatedSummary() {
   const [selectedPeriods, setSelectedPeriods] = useState(new Set());
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [dianRates, setDianRates] = useState([]);
+  const [dianRateId, setDianRateId] = useState(null);
 
   useEffect(() => {
     api.get('/stores').then(r => {
       setStores(r.data);
       if (r.data.length) setStoreId(r.data[0].id);
+    });
+    api.get('/dian-rates').then(r => {
+      setDianRates(r.data);
+      const def = r.data.find(x => x.is_default) || r.data[0];
+      if (def) setDianRateId(def.id);
     });
   }, []);
 
@@ -224,11 +231,14 @@ export default function AccumulatedSummary() {
   const total = entregado + totalIncome - devolucionTotal - totalPublicidad - totalGastos;
   const valor10 = total * 0.1;
   const totalSin10 = total - valor10;
-  // Valor DIAN: 3.5% of total entregado (Dropi). For Zindra, the base also includes
-  // "Otros ingresos" — same rule as the monthly Resumen, shown as an independent scenario.
+  // Valor DIAN: configurable % (default 3.5%, editable in Configuración) of total
+  // entregado (Dropi). For Zindra, the base also includes "Otros ingresos" — same rule
+  // as the monthly Resumen, shown as an independent scenario.
   const isZindra = (store?.name || '').toLowerCase().includes('zindra');
+  const dianRate = dianRates.find(r => r.id === dianRateId);
+  const dianPct = dianRate ? dianRate.percentage : 3.5;
   const valorDianBase = entregado + (isZindra ? totalIncome : 0);
-  const valorDian = valorDianBase * 0.035;
+  const valorDian = valorDianBase * (dianPct / 100);
   const totalSinDian = total - valorDian;
 
   const selectedLabel = [...selectedPeriods]
@@ -412,10 +422,20 @@ export default function AccumulatedSummary() {
           </div>
           <div style={{ borderTop: '1px dashed #e2e8f0', margin: '6px 0' }} />
           <div style={{ ...s.totalRow, fontSize: 13, fontWeight: 600, color: '#dc2626' }}>
-            <span>
-              Valor DIAN (3.5%)
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              Valor DIAN
+              {dianRates.length > 0 ? (
+                <select
+                  value={dianRateId || ''}
+                  onChange={e => setDianRateId(Number(e.target.value))}
+                  style={{ fontSize: 12, fontWeight: 600, color: '#dc2626', border: '1px solid #fecaca',
+                           borderRadius: 6, background: '#fef2f2', padding: '2px 4px', cursor: 'pointer' }}
+                >
+                  {dianRates.map(r => <option key={r.id} value={r.id}>{r.name} ({r.percentage}%)</option>)}
+                </select>
+              ) : `(${dianPct}%)`}
               {isZindra && (
-                <span style={{ marginLeft: 6, fontSize: 11, background: '#fef2f2', color: '#dc2626', padding: '1px 6px', borderRadius: 8 }}>
+                <span style={{ fontSize: 11, background: '#fef2f2', color: '#dc2626', padding: '1px 6px', borderRadius: 8 }}>
                   incluye otros ingresos
                 </span>
               )}
