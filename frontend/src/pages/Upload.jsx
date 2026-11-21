@@ -167,6 +167,7 @@ function AdSpendCard({ periodId, storeId, products, departments }) {
   const [batches, setBatches] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
   const [regions, setRegions] = useState([]);
+  const [editingRegions, setEditingRegions] = useState(() => new Set());
 
   const loadAll = useCallback(async () => {
     if (!periodId) return;
@@ -225,11 +226,16 @@ function AdSpendCard({ periodId, storeId, products, departments }) {
   async function handleFixRegion(regionRaw, departamento) {
     if (!departamento) return;
     await api.post('/region-aliases', { store_id: storeId, region_raw: regionRaw, departamento });
+    setEditingRegions(prev => { const next = new Set(prev); next.delete(regionRaw); return next; });
     loadAll();
   }
   async function handleRemoveRegion(id) {
+    if (!window.confirm('¿Eliminar esta fila de región por completo? Se borra también su gasto — esto NO es para corregir el departamento, usa el lápiz para eso.')) return;
     await api.delete(`/ad-region-spend/${id}`);
     setRegions(prev => prev.filter(r => r.id !== id));
+  }
+  function startEditRegion(regionRaw) {
+    setEditingRegions(prev => new Set(prev).add(regionRaw));
   }
 
   const totalCampaignSpend = campaigns.reduce((sum, c) => sum + (c.spend || 0), 0);
@@ -373,10 +379,12 @@ function AdSpendCard({ periodId, storeId, products, departments }) {
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b', minWidth: 100, textAlign: 'right' }}>
                     {fmt(r.spend)}
                   </div>
-                  {r.departamento ? (
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', background: '#f0fdf4',
-                                    padding: '3px 10px', borderRadius: 10, minWidth: 140, textAlign: 'center' }}>
+                  {r.departamento && !editingRegions.has(r.region_raw) ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: '#16a34a',
+                                    background: '#f0fdf4', padding: '3px 6px 3px 10px', borderRadius: 10, minWidth: 140, justifyContent: 'center' }}>
                       ✓ {r.departamento}
+                      <button onClick={() => startEditRegion(r.region_raw)} title="Corregir el departamento (no borra el gasto)"
+                        style={{ background: 'none', border: 'none', color: '#16a34a', cursor: 'pointer', fontSize: 12, padding: '0 2px' }}>✏️</button>
                     </span>
                   ) : (
                     <select defaultValue="" onChange={e => handleFixRegion(r.region_raw, e.target.value)}
@@ -385,7 +393,7 @@ function AdSpendCard({ periodId, storeId, products, departments }) {
                       {departments.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   )}
-                  <button onClick={() => handleRemoveRegion(r.id)}
+                  <button onClick={() => handleRemoveRegion(r.id)} title="Eliminar esta fila y su gasto por completo"
                     style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: 13 }}>✕</button>
                 </div>
               ))}
