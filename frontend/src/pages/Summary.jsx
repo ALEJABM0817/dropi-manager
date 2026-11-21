@@ -380,6 +380,10 @@ export default function Summary() {
   async function saveExpense(categoryId, amount) {
     await api.post('/expenses', { period_id: period.period_id, store_id: period.store_id, category_id: categoryId, amount });
   }
+  async function toggleExpenseFem(categoryId, aplica) {
+    setExpenses(prev => prev.map(x => x.category_id === categoryId ? { ...x, aplica_zindra_fem: aplica ? 1 : 0 } : x));
+    await api.patch(`/expenses/categories/${categoryId}`, { aplica_zindra_fem: aplica });
+  }
   async function saveTotalPedidosShopify(val) {
     setTotalPedidosShopify(val);
     await api.patch(`/periods/${period.period_id}/total-pedidos`, { total_pedidos_shopify: val, total_pedidos_whatsapp: totalPedidosWhatsapp });
@@ -454,6 +458,10 @@ export default function Summary() {
   const usingCampaignSpend = campaignSpend > 0;
   const totalPublicidad  = usingCampaignSpend ? campaignSpend : totalPublicidadManual;
   const totalGastos      = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+  // Expenses marked "no aplica a Fem" go 100% to Hombre instead of being split
+  // proportionally between the two lines — e.g. a service that's only used for Hombre.
+  const totalGastosFemAplica = expenses.reduce((s, e) => s + (e.aplica_zindra_fem === 0 ? 0 : (e.amount || 0)), 0);
+  const totalGastosSoloHombre = totalGastos - totalGastosFemAplica;
   const total            = entregado + totalIncome - devolucionTotal - totalPublicidad - totalGastos;
   const valor10          = total * 0.1;
   const totalSin10       = total - valor10;
@@ -508,7 +516,7 @@ export default function Summary() {
     const ingreso = ingresoProducto + otrosIngresos;
     const costoDev = b.costoDev + costoDevSinAsignar * share;
     const adSpend = b.adSpend + adSpendSinAsignar * share;
-    const otrosAsignados = totalGastos * share;
+    const otrosAsignados = totalGastosFemAplica * share + (key === 'HOMBRE' ? totalGastosSoloHombre : 0);
     const resultado = ingreso - costoDev - adSpend - otrosAsignados;
     // Same base Valor DIAN uses above (entregado + otros ingresos para Zindra) — per línea
     // esto es exactamente "ingreso" de esta línea, así que Hombre+Dama suma el mismo
@@ -540,7 +548,7 @@ export default function Summary() {
     const ingreso = b.ingreso + ingresoSinAsignarProducto * share + otrosIngresos;
     const costoDev = b.costoDev + costoDevSinAsignarBase * share;
     const adSpend = b.adSpend + adSpendSinAsignar * share;
-    const otrosAsignados = totalGastos * share;
+    const otrosAsignados = totalGastosFemAplica * share + (key === 'HOMBRE' ? totalGastosSoloHombre : 0);
     return ingreso - costoDev - adSpend - otrosAsignados;
   }
   const hombreProjection = showLineas ? buildProjectionSteps({
@@ -1086,6 +1094,19 @@ export default function Summary() {
                            padding: '7px 0', borderBottom: '1px solid #f8fafc' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontSize: 13, color: '#64748b' }}>{exp.name}</span>
+                    {showLineas && (
+                      <button
+                        onClick={() => toggleExpenseFem(exp.category_id, exp.aplica_zindra_fem === 0)}
+                        title={exp.aplica_zindra_fem === 0
+                          ? 'Este gasto NO se reparte a Zindra Fem — va 100% a Hombre. Click para incluirlo en Fem.'
+                          : 'Este gasto se reparte entre Hombre y Fem según despachados. Click para excluirlo de Fem.'}
+                        style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 8, cursor: 'pointer',
+                                 border: 'none',
+                                 background: exp.aplica_zindra_fem === 0 ? '#fef2f2' : '#f0fdf4',
+                                 color: exp.aplica_zindra_fem === 0 ? '#dc2626' : '#16a34a' }}>
+                        {exp.aplica_zindra_fem === 0 ? 'Fem: NO' : 'Fem: SÍ'}
+                      </button>
+                    )}
                     <button onClick={() => removeExpense(exp.category_id)}
                       style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: 11 }}>✕</button>
                   </div>

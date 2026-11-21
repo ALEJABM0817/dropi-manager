@@ -404,6 +404,18 @@ with get_db() as conn:
     if "numero_guia" not in po_cols:
         conn.execute("ALTER TABLE product_orders ADD COLUMN numero_guia TEXT DEFAULT ''")
 
+# Migration: add aplica_zindra_fem to expense_categories — lets the user mark an expense
+# category as Hombre-only, so it stops being split proportionally into the Zindra Fem
+# mini-P&L (defaults to 1/true so every existing category keeps behaving exactly as before).
+# Also backfills auto_populate, which some endpoints already relied on but was never
+# created by this script on a fresh install (only ever existed on the live database).
+with get_db() as conn:
+    ec_cols = {r[1] for r in conn.execute("PRAGMA table_info(expense_categories)").fetchall()}
+    if "auto_populate" not in ec_cols:
+        conn.execute("ALTER TABLE expense_categories ADD COLUMN auto_populate INTEGER DEFAULT 1")
+    if "aplica_zindra_fem" not in ec_cols:
+        conn.execute("ALTER TABLE expense_categories ADD COLUMN aplica_zindra_fem INTEGER DEFAULT 1")
+
 def rows_to_list(rows):
     return [dict(r) for r in rows]
 
@@ -1556,6 +1568,17 @@ def delete_category(cat_id: int):
         conn.execute("UPDATE expense_categories SET active=0 WHERE id=?", (cat_id,))
     return {"ok": True}
 
+class CategoryUpdate(BaseModel):
+    aplica_zindra_fem: Optional[bool] = None
+
+@app.patch("/api/expenses/categories/{cat_id}")
+def update_category(cat_id: int, body: CategoryUpdate):
+    if body.aplica_zindra_fem is not None:
+        with get_db() as conn:
+            conn.execute("UPDATE expense_categories SET aplica_zindra_fem=? WHERE id=?",
+                         (1 if body.aplica_zindra_fem else 0, cat_id))
+    return {"ok": True}
+
 @app.delete("/api/expenses/entry")
 def delete_expense_entry(category_id: int, period_id: int, store_id: int):
     with get_db() as conn:
@@ -1576,7 +1599,7 @@ def get_expenses(period_id: int, store_id: int):
                      WHERE p.store_id=:store_id AND (p.year*100+p.month) < (cur.year*100+cur.month)
                      ORDER BY (p.year*100+p.month) DESC LIMIT 1
                  )
-            SELECT c.id as category_id, c.name,
+            SELECT c.id as category_id, c.name, c.aplica_zindra_fem,
                    COALESCE(e.amount, 0) as amount, e.id,
                    (c.auto_populate = 1 AND EXISTS(
                        SELECT 1 FROM expenses e2, last_period lp
